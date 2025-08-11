@@ -1,9 +1,11 @@
-export default function Home() {
+// app/page.js
+export default function HomePage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-blue-500">
-      <h1 className="text-4xl font-bold text-white">
-        Tailwind 4 is working 🎉
-      </h1>
-    </div>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-slate-100">
+      <h1 className="text-4xl font-bold text-slate-800">Supabase PWA</h1>
+      <p className="mt-4 text-slate-600">
+        Welcome to my Progressive Web App with Next.js, Supabase, and Tailwind!
+      </p>
+    </main>
   );
 }
