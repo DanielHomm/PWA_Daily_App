@@ -1,4 +1,5 @@
 import './globals.css';
+import Header from '../components/Header';
 
 export const metadata = {
   title: 'Supabase PWA',
@@ -6,7 +7,6 @@ export const metadata = {
   manifest: '/manifest.json',
 };
 
-// ✅ New viewport export
 export const viewport = {
   themeColor: '#0f172a',
 };
@@ -14,7 +14,10 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-white">{children}</body>
+      <body className="bg-white text-black">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }
