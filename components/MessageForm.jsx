@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../lib/AuthContext";
+import toast from "react-hot-toast";
 
 export default function MessageForm({ onMessageAdded }) {
   const { user } = useAuth();
@@ -12,47 +13,37 @@ export default function MessageForm({ onMessageAdded }) {
     e.preventDefault();
     if (!content.trim()) return;
 
-     setLoading(true);
+    setLoading(true);
 
-      // Safety: auto-reset loading after 5s no matter what
+    // Safety: auto-reset loading after 5s no matter what
     const timeoutId = setTimeout(() => {
-        console.warn("Supabase request took too long — resetting form state.");
-        setLoading(false);
+      console.warn("Supabase request took too long — resetting form state.");
+      setLoading(false);
     }, 5000);
 
-    let data = null;
-    let error = null;
-
     try {
-        const result = await supabase
+      const { data, error } = await supabase
         .from("messages")
-        .insert([{ content }])
+        .insert([{ content, user_id: user.id }])
         .select();
 
-        data = result.data;
-        error = result.error;
+      if (error) throw error;
 
-        if (error) throw error;
+      setContent("");
+      toast.success("Message sent!");
 
-        setContent("");
-
-        if (data && data.length > 0 && onMessageAdded) {
+      if (data && data.length > 0 && onMessageAdded) {
         onMessageAdded(data[0]);
-        }
+      }
     } catch (err) {
-        console.error("Error inserting message:", err);
+      console.error("Error inserting message:", err);
+      toast.error("Failed to send message");
     } finally {
-        clearTimeout(timeoutId); // stop the safety timer
-        setLoading(false);       // normal reset
-    }
-    // Clear input
-    setContent("");
-
-    // Notify parent to refresh the list
-    if (data && data.length > 0 && onMessageAdded) {
-        onMessageAdded(data[0]);
+      clearTimeout(timeoutId);
+      setLoading(false);
     }
   }
+
   if (!user) return <p>You must log in to post a message.</p>;
 
   return (
@@ -67,7 +58,7 @@ export default function MessageForm({ onMessageAdded }) {
       <button
         type="submit"
         disabled={loading}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400 cursor-pointer"
       >
         {loading ? "Sending..." : "Send"}
       </button>
