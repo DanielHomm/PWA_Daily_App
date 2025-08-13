@@ -1,34 +1,35 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabaseClient";
 
-export default function MessagesList() {
+export default function MessagesList({ refreshFlag }) {
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    async function loadMessages() {
-      console.log('Fetching messages from Supabase...');
+    async function fetchMessages() {
+      console.log("Fetching messages from Supabase...");
       const { data, error } = await supabase
-        .from('messages') // ✅ make sure this matches EXACTLY your table name
-        .select('*');
-
-      console.log('Supabase returned:', { data, error });
+        .from("messages")
+        .select("*")
+        .order("id", { ascending: false });
 
       if (error) {
-        console.error('Error fetching messages:', error);
+        console.error("Supabase error:", error);
       } else {
         setMessages(data);
       }
     }
 
-    loadMessages();
-  }, []);
+    fetchMessages();
+  }, [refreshFlag]);
 
   return (
-    <ul>
+    <ul className="space-y-2">
       {messages.map((msg) => (
-        <li key={msg.id}>{msg.content}</li>
+        <li key={msg.id} className="border p-2 rounded">
+          {msg.content}
+        </li>
       ))}
     </ul>
   );
