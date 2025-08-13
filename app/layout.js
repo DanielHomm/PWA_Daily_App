@@ -1,5 +1,6 @@
 import './globals.css';
 import { AuthProvider } from '../lib/AuthContext';
+import Header from '../components/Header';
 
 export const metadata = {
   title: 'Supabase PWA',
@@ -8,9 +9,10 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>
+      <body className="bg-gray-100 min-h-screen">
         <AuthProvider>
-          {children}
+          <Header />
+          <main className="p-4">{children}</main>
         </AuthProvider>
       </body>
     </html>

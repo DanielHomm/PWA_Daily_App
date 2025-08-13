@@ -2,9 +2,9 @@
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../lib/AuthContext";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 
-export default function AuthForm() {
+export default function AuthForm({ onAuthSuccess }) {
   const { user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,15 +13,13 @@ export default function AuthForm() {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       console.error(error);
       toast.error("Login failed", toastOptions);
     } else {
       toast.success("Login successful", toastOptions);
+      if (onAuthSuccess) onAuthSuccess(); // close modal
     }
   }
 
@@ -30,9 +28,10 @@ export default function AuthForm() {
     const { error } = await supabase.auth.signUp({ email, password });
     if (error) {
       console.error(error);
-      toast.error("Sign-up failed due to " + error.message, toastOptions);
+      toast.error("Sign-up failed: " + error.message, toastOptions);
     } else {
-      toast.success("Sign-up successful and a verification mail was sent.", toastOptions);
+      toast.success("Sign-up successful! Check your email.", toastOptions);
+      if (onAuthSuccess) onAuthSuccess(); // close modal
     }
   }
 
@@ -43,12 +42,12 @@ export default function AuthForm() {
       toast.error("Logout failed", toastOptions);
     } else {
       toast.success("Logout successful", toastOptions);
+      if (onAuthSuccess) onAuthSuccess();
     }
   }
 
   return (
     <div>
-      <Toaster position="top-center" reverseOrder={false} />
       {user ? (
         <div>
           <p>Logged in as {user.email}</p>
