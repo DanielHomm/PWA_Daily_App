@@ -19,7 +19,7 @@ export default function AuthForm({ onAuthSuccess }) {
       toast.error("Login failed", toastOptions);
     } else {
       toast.success("Login successful", toastOptions);
-      if (onAuthSuccess) onAuthSuccess(); // close modal
+      if (onAuthSuccess) onAuthSuccess();
     }
   }
 
@@ -31,7 +31,7 @@ export default function AuthForm({ onAuthSuccess }) {
       toast.error("Sign-up failed: " + error.message, toastOptions);
     } else {
       toast.success("Sign-up successful! Check your email.", toastOptions);
-      if (onAuthSuccess) onAuthSuccess(); // close modal
+      if (onAuthSuccess) onAuthSuccess();
     }
   }
 
@@ -50,7 +50,7 @@ export default function AuthForm({ onAuthSuccess }) {
     <div>
       {user ? (
         <div>
-          <p>Logged in as {user.email}</p>
+          <p className="text-black">Logged in as {user.email}</p>
           <button
             onClick={handleLogout}
             className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 cursor-pointer"
@@ -65,14 +65,14 @@ export default function AuthForm({ onAuthSuccess }) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border px-2 py-1 bg-white"
+            className="border px-2 py-1 bg-white text-black"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border px-2 py-1 bg-white"
+            className="border px-2 py-1 bg-white text-black"
           />
           <div className="flex gap-2">
             <button
