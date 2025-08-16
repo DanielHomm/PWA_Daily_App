@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
-import { Menu, X } from "lucide-react"; // icon library
+import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
@@ -27,10 +27,20 @@ export default function Header() {
   return (
     <header className="w-full bg-slate-800 text-white shadow-md">
       <nav className="max-w-4xl mx-auto flex items-center justify-between p-4">
-        {/* Logo */}
-        <Link href="/" className="text-lg font-bold">
-          Supabase PWA
-        </Link>
+        {/* Left side: Mobile Menu Button */}
+        <div className="flex items-center gap-3">
+          <button
+            className="sm:hidden p-2 hover:bg-slate-700 rounded"
+            onClick={() => setMobileOpen((prev) => !prev)}
+          >
+            {mobileOpen ? <X /> : <Menu />}
+          </button>
+
+          {/* Logo */}
+          <Link href="/" className="text-lg font-bold">
+            Supabase PWA
+          </Link>
+        </div>
 
         {/* Desktop Nav */}
         <ul className="hidden sm:flex gap-4">
@@ -58,14 +68,6 @@ export default function Header() {
             onSignupClick={() => setShowSignupForm(true)}
           />
         </div>
-
-        {/* Mobile Menu Button */}
-        <button
-          className="sm:hidden p-2 hover:bg-slate-700 rounded"
-          onClick={() => setMobileOpen((prev) => !prev)}
-        >
-          {mobileOpen ? <X /> : <Menu />}
-        </button>
       </nav>
 
       {/* Mobile Menu */}
