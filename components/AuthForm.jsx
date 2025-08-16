@@ -65,14 +65,14 @@ export default function AuthForm({ onAuthSuccess }) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border px-2 py-1"
+            className="border px-2 py-1 bg-white"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border px-2 py-1"
+            className="border px-2 py-1 bg-white"
           />
           <div className="flex gap-2">
             <button
