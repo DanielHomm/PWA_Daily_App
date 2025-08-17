@@ -17,6 +17,7 @@ export default function Header() {
     { name: "Home", href: "/" },
     { name: "Messages", href: "/messages" },
     { name: "Profile", href: "/profile" },
+    { name: "Items", href: "/items" }
   ];
 
   function closeAuthForms() {
