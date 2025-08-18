@@ -5,7 +5,7 @@ import { useAuth } from "../lib/AuthContext";
 import toast from "react-hot-toast";
 
 export default function MessageForm({ onMessageAdded }) {
-  const { user } = useAuth();
+  const { user, profile, loadingUser } = useAuth();
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
 

@@ -8,7 +8,7 @@ import { useAuth } from "../../lib/AuthContext";
 
 export default function Home() {
   const [refreshFlag, setRefreshFlag] = useState(false);
-  const { user } = useAuth();
+    const { user, profile, loading } = useAuth();
 
   return (
     <main className="max-w-xl mx-auto p-4">

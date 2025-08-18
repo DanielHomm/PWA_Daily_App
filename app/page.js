@@ -2,7 +2,7 @@
 import { useAuth } from "../lib/AuthContext";
 
 export default function HomePage() {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
 
   return (
     <main className="max-w-xl mx-auto p-4">

@@ -5,7 +5,7 @@ import { useAuth } from "../lib/AuthContext";
 import toast from "react-hot-toast";
 
 export default function AuthForm({ onAuthSuccess }) {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -33,6 +33,12 @@ export default function AuthForm({ onAuthSuccess }) {
       toast.success("Sign-up successful! Check your email.", toastOptions);
       if (onAuthSuccess) onAuthSuccess();
     }
+
+    if (!error && data?.user) {
+        await supabase.from("profiles").insert([
+        { id: data.user.id, email: data.user.email }
+  ]);
+}
   }
 
   async function handleLogout() {

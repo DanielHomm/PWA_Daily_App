@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAuth } from "../lib/AuthContext"; // ✅ import auth context
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
 import { Menu, X } from "lucide-react";
@@ -13,12 +14,20 @@ export default function Header() {
   const [showSignupForm, setShowSignupForm] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const { profile } = useAuth(); // ✅ get profile
+  const isAdmin = profile?.role === "admin";
+
+  // Base nav items
   const navItems = [
     { name: "Home", href: "/" },
     { name: "Messages", href: "/messages" },
     { name: "Profile", href: "/profile" },
-    { name: "Items", href: "/items" }
   ];
+
+  // Only push Items if admin
+  if (isAdmin) {
+    navItems.push({ name: "Items", href: "/items" });
+  }
 
   function closeAuthForms() {
     setShowLoginForm(false);

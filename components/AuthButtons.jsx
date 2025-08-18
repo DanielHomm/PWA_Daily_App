@@ -5,7 +5,7 @@ import { supabase } from "../lib/supabaseClient";
 import toast from "react-hot-toast";
 
 export default function AuthButtons({ onLoginClick, onSignupClick }) {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const toastOptions = { duration: 2000 };
 
   async function handleLogout() {

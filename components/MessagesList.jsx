@@ -5,7 +5,7 @@ import { useAuth } from "../lib/AuthContext";
 import toast from "react-hot-toast";
 
 export default function MessagesList({ refreshFlag }) {
-  const { user } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [messages, setMessages] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [editContent, setEditContent] = useState("");
