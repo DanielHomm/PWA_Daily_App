@@ -20,10 +20,12 @@ export default function Header() {
   // Base nav items
   const navItems = [
     { name: "Home", href: "/" },
-    { name: "Messages", href: "/messages" },
-    { name: "Profile", href: "/profile" },
   ];
-
+// Only show Messages and Profile if logged in
+  if (profile) {
+    navItems.push({ name: "Messages", href: "/messages" });
+    navItems.push({ name: "Profile", href: "/profile" });
+  }
   // Only push Items if admin
   if (isAdmin) {
     navItems.push({ name: "Items", href: "/items" });
