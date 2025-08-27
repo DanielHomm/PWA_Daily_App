@@ -25,6 +25,7 @@ export default function Header() {
   if (profile) {
     navItems.push({ name: "Messages", href: "/messages" });
     navItems.push({ name: "Profile", href: "/profile" });
+    navItems.push({ name: "Grocery", href: "/shopping-lists" });
   }
   // Only push Items if admin
   if (isAdmin) {
