@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
+import ShareModal from "../../../components/ShareModal";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
+  const [showShare, setShowShare] = useState(false);
 
   useEffect(() => {
     if (id) fetchItems();
@@ -130,7 +132,16 @@ export default function ShoppingListDetailPage() {
 
   return (
     <main className="max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Shopping List</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Shopping List</h1>
+        <button
+          onClick={() => setShowShare(true)}
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+        >
+          Share
+        </button>
+      </div>
 
       {/* Search / add input */}
       <div className="relative mb-6">
@@ -174,7 +185,6 @@ export default function ShoppingListDetailPage() {
                   key={it.id}
                   className="flex justify-between items-center p-3 border rounded cursor-pointer hover:bg-slate-50"
                   onClick={(e) => {
-                    // don’t trigger toggle when clicking inside input
                     if (e.target.tagName.toLowerCase() !== "input") {
                       toggleMarked(it.id, it.marked);
                     }
@@ -186,17 +196,13 @@ export default function ShoppingListDetailPage() {
                       type="number"
                       min="1"
                       value={it.quantity ?? ""}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        const updated = items.map((i) =>
-                          i.id === it.id ? { ...i, quantity: val } : i
-                        );
+                      onChange={(e) =>
                         setItems((prev) =>
                           prev.map((i) =>
-                            i.id === it.id ? { ...i, quantity: val } : i
+                            i.id === it.id ? { ...i, quantity: e.target.value } : i
                           )
-                        );
-                      }}
+                        )
+                      }
                       onBlur={(e) => updateQuantity(it.id, e.target.value)}
                       className="w-16 border rounded px-2 py-1"
                     />
@@ -231,6 +237,11 @@ export default function ShoppingListDetailPage() {
           </div>
         )}
       </div>
+
+      {/* Share Modal */}
+      {showShare && (
+        <ShareModal listId={id} onClose={() => setShowShare(false)} />
+      )}
     </main>
   );
 }

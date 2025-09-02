@@ -3,38 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "../lib/AuthContext"; // ✅ import auth context
+import { useAuth } from "../lib/AuthContext"; 
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
 import { Menu, X } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
-  const [showLoginForm, setShowLoginForm] = useState(false);
-  const [showSignupForm, setShowSignupForm] = useState(false);
+  const [authMode, setAuthMode] = useState(null); // "login" | "signup" | null
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { profile } = useAuth(); // ✅ get profile
+  const { profile } = useAuth(); 
   const isAdmin = profile?.role === "admin";
 
   // Base nav items
-  const navItems = [
-    { name: "Home", href: "/" },
-  ];
-// Only show Messages and Profile if logged in
+  const navItems = [{ name: "Home", href: "/" }];
+
+  // Only show Messages and Profile if logged in
   if (profile) {
     navItems.push({ name: "Messages", href: "/messages" });
     navItems.push({ name: "Profile", href: "/profile" });
     navItems.push({ name: "Grocery", href: "/shopping-lists" });
   }
+
   // Only push Items if admin
   if (isAdmin) {
     navItems.push({ name: "Items", href: "/items" });
-  }
-
-  function closeAuthForms() {
-    setShowLoginForm(false);
-    setShowSignupForm(false);
   }
 
   return (
@@ -77,8 +71,8 @@ export default function Header() {
         {/* Desktop Auth Buttons */}
         <div className="hidden sm:block">
           <AuthButtons
-            onLoginClick={() => setShowLoginForm(true)}
-            onSignupClick={() => setShowSignupForm(true)}
+            onLoginClick={() => setAuthMode("login")}
+            onSignupClick={() => setAuthMode("signup")}
           />
         </div>
       </nav>
@@ -105,11 +99,11 @@ export default function Header() {
           <div className="pt-2 border-t border-slate-500">
             <AuthButtons
               onLoginClick={() => {
-                setShowLoginForm(true);
+                setAuthMode("login");
                 setMobileOpen(false);
               }}
               onSignupClick={() => {
-                setShowSignupForm(true);
+                setAuthMode("signup");
                 setMobileOpen(false);
               }}
             />
@@ -117,25 +111,15 @@ export default function Header() {
         </div>
       )}
 
-      {/* Login Form */}
-      {showLoginForm && (
+      {/* Auth Form (single entry point) */}
+      {authMode && (
         <div className="p-4 bg-gray-100">
-          <AuthForm onAuthSuccess={closeAuthForms} />
+          <AuthForm
+            onAuthSuccess={() => setAuthMode(null)}
+            defaultMode={authMode}
+          />
           <button
-            onClick={closeAuthForms}
-            className="mt-2 text-sm underline"
-          >
-            Close
-          </button>
-        </div>
-      )}
-
-      {/* Signup Form */}
-      {showSignupForm && (
-        <div className="p-4 bg-gray-100">
-          <AuthForm onAuthSuccess={closeAuthForms} />
-          <button
-            onClick={closeAuthForms}
+            onClick={() => setAuthMode(null)}
             className="mt-2 text-sm underline"
           >
             Close

@@ -15,7 +15,7 @@ export default function ShoppingListsPage() {
       <h1 className="text-2xl font-bold mb-4">Shopping Lists</h1>
 
       {/* Always show Auth */}
-      <AuthForm />
+      {/*<AuthForm />*/}
 
       {/* Only show lists if logged in */}
       {user && (

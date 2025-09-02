@@ -1,16 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function ShoppingListForm({ onListAdded }) {
   const [name, setName] = useState("");
-
+  const { user } = useAuth();
   async function handleSubmit(e) {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const { error } = await supabase.from("shopping_lists").insert([{ name }]);
+    const { error } = await supabase.from("shopping_lists").insert([{name: name, owner: user.id }]);
     if (error) {
       console.error(error);
     } else {
