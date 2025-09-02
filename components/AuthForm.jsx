@@ -1,11 +1,13 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // ✅ App Router import
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../lib/AuthContext";
 import toast from "react-hot-toast";
 
-export default function AuthForm({ onAuthSuccess, defaultMode = "login"}) {
+export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
   const { user } = useAuth();
+  const router = useRouter(); // ✅ now defined
   const [mode, setMode] = useState(defaultMode); // "login" | "signup"
 
   // login/signup fields
@@ -28,6 +30,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login"}) {
     } else {
       toast.success("Login successful", toastOptions);
       if (onAuthSuccess) onAuthSuccess();
+      router.push("/"); // optional: redirect after login too
     }
   }
 
@@ -44,7 +47,6 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login"}) {
     }
 
     if (data?.user) {
-      // create profile row
       const { error: profileError } = await supabase.from("profiles").insert([
         {
           id: data.user.id,
@@ -59,7 +61,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login"}) {
 
     toast.success("Sign-up successful! Check your email.", toastOptions);
     if (onAuthSuccess) onAuthSuccess();
-    setMode("login"); // go back to login after signup
+    setMode("login"); // back to login after signup
   }
 
   async function handleLogout() {
