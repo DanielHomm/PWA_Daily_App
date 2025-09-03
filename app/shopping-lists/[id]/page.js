@@ -1,40 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import ShareModal from "../../../components/ShareModal";
+import { useShoppingList } from "../../../lib/hooks/useShoppingList";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
-  const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showShare, setShowShare] = useState(false);
 
-  useEffect(() => {
-    if (id) fetchItems();
-  }, [id]);
-
-  async function fetchItems() {
-    const { data, error } = await supabase
-      .from("shopping_list_items")
-      .select(`
-        id,
-        quantity,
-        marked,
-        items (
-          id,
-          name,
-          category:categories(name),
-          unit:units(name)
-        )
-      `)
-      .eq("shopping_list_id", id);
-
-    if (error) console.error(error);
-    else setItems(data || []);
-  }
+  const {
+    items,
+    addItem,
+    updateQuantity,
+    toggleMarked,
+    deleteItem,
+  } = useShoppingList(id);
 
   // search all items
   async function handleSearch(e) {
@@ -67,47 +51,11 @@ export default function ShoppingListDetailPage() {
     setSearchResults(results);
   }
 
-  async function addItem(itemId) {
-    const { error } = await supabase.from("shopping_list_items").insert([
-      { shopping_list_id: id, item_id: itemId, quantity: 1 },
-    ]);
-    if (error) console.error(error);
-    else {
-      setSearch("");
-      setSearchResults([]);
-      fetchItems();
-    }
-  }
-
-  async function updateQuantity(itemId, value) {
-    let qty = parseInt(value, 10);
-    if (!qty || qty < 1) qty = 1;
-
-    const { error } = await supabase
-      .from("shopping_list_items")
-      .update({ quantity: qty })
-      .eq("id", itemId);
-
-    if (error) console.error(error);
-    else fetchItems();
-  }
-
-  async function toggleMarked(itemId, current) {
-    const { error } = await supabase
-      .from("shopping_list_items")
-      .update({ marked: !current })
-      .eq("id", itemId);
-
-    if (error) console.error(error);
-    else fetchItems();
-  }
-
   // Sort items: unmarked grouped by category, marked separately at bottom
   function groupItems() {
     const unmarked = items.filter((i) => !i.marked);
     const marked = items.filter((i) => i.marked);
 
-    // group unmarked by category
     const categories = {};
     unmarked.forEach((i) => {
       const cat = i.items.category?.name || "Uncategorized";
@@ -115,14 +63,12 @@ export default function ShoppingListDetailPage() {
       categories[cat].push(i);
     });
 
-    // sort inside categories
     Object.keys(categories).forEach((cat) => {
       categories[cat].sort((a, b) =>
         a.items.name.localeCompare(b.items.name)
       );
     });
 
-    // sort marked alphabetically
     marked.sort((a, b) => a.items.name.localeCompare(b.items.name));
 
     return { categories, marked };
@@ -164,6 +110,8 @@ export default function ShoppingListDetailPage() {
                 }`}
                 onClick={() => {
                   if (!res.alreadyAdded) addItem(res.id);
+                  setSearch("");
+                  setSearchResults([]);
                 }}
               >
                 {res.name}
@@ -197,18 +145,22 @@ export default function ShoppingListDetailPage() {
                       min="1"
                       value={it.quantity ?? ""}
                       onChange={(e) =>
-                        setItems((prev) =>
-                          prev.map((i) =>
-                            i.id === it.id ? { ...i, quantity: e.target.value } : i
-                          )
-                        )
+                        updateQuantity(it.id, e.target.value)
                       }
-                      onBlur={(e) => updateQuantity(it.id, e.target.value)}
                       className="w-16 border rounded px-2 py-1"
                     />
                     <span className="text-sm text-gray-600">
                       {it.items.unit?.name}
                     </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteItem(it.id);
+                      }}
+                      className="text-red-600 hover:text-red-800 ml-2"
+                    >
+                      ✕
+                    </button>
                   </div>
                 </li>
               ))}
@@ -228,9 +180,20 @@ export default function ShoppingListDetailPage() {
                   onClick={() => toggleMarked(it.id, it.marked)}
                 >
                   <span>{it.items.name}</span>
-                  <span className="text-sm">
-                    {it.quantity} {it.items.unit?.name}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm">
+                      {it.quantity} {it.items.unit?.name}
+                    </span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteItem(it.id);
+                      }}
+                      className="text-red-600 hover:text-red-800 ml-2"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </li>
               ))}
             </ul>
