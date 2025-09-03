@@ -14,7 +14,7 @@ export default function SwipeableListItem({ children, onDelete }) {
       }
     },
     onSwipedLeft: (e) => {
-      if (e.absX > 80) {
+      if (e.absX > 50) {
         // swipe far enough
         setTranslateX(-200);
         setTimeout(onDelete, 200); // trigger delete
