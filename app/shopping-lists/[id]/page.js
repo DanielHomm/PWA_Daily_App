@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import ShareModal from "../../../components/ShareModal";
 import { useShoppingList } from "../../../lib/hooks/useShoppingList";
+import SwipeableListItem from "../../../components/shopping_list/SwipeableListItem";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
@@ -129,6 +130,7 @@ export default function ShoppingListDetailPage() {
             <h2 className="font-bold text-lg mb-2">{cat}</h2>
             <ul className="space-y-2">
               {items.map((it) => (
+                <SwipeableListItem key={it.id} onDelete={() => deleteItem(it.id)}>
                 <li
                   key={it.id}
                   className="flex justify-between items-center p-3 border rounded cursor-pointer hover:bg-slate-50"
@@ -163,6 +165,7 @@ export default function ShoppingListDetailPage() {
                     </button>
                   </div>
                 </li>
+                </SwipeableListItem>
               ))}
             </ul>
           </div>
