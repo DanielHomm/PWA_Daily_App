@@ -6,6 +6,7 @@ import { supabase } from "../../../lib/supabaseClient";
 import ShareModal from "../../../components/ShareModal";
 import { useShoppingList } from "../../../lib/hooks/useShoppingList";
 import SwipeableListItem from "../../../components/shopping_list/SwipeableListItem";
+import { db } from "../../../lib/localDB";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
@@ -31,14 +32,39 @@ export default function ShoppingListDetailPage() {
       return;
     }
 
-    const { data, error } = await supabase
-      .from("items")
-      .select("id, name")
-      .ilike("name", `%${value}%`)
-      .limit(10);
+    let data = [];
+    let error = null;
 
-    if (error) {
-      console.error(error);
+    if (navigator.onLine) {
+      // Try Supabase first
+      const { data: supaData, error: supaError } = await supabase
+        .from("items")
+        .select("id, name")
+        .ilike("name", `%${value}%`)
+        .limit(10);
+
+      data = supaData || [];
+      error = supaError;
+    }
+
+    if (!navigator.onLine || error) {
+      console.warn("Falling back to local Dexie search...");
+
+      try {
+        // Dexie full-text "like" filter (case-insensitive)
+        data = await db.items
+          .filter((item) =>
+            item.name.toLowerCase().includes(value.toLowerCase())
+          )
+          .limit(10)
+          .toArray();
+      } catch (dexieErr) {
+        console.error("Dexie search failed:", dexieErr);
+      }
+    }
+
+    if (!data.length) {
+      setSearchResults([]);
       return;
     }
 
