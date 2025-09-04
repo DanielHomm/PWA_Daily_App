@@ -1,29 +1,37 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { getShoppingLists } from "../lib/localDB";
+import { useAuth } from "../lib/AuthContext";
 
 export default function ShoppingLists({ refreshFlag }) {
   const [lists, setLists] = useState([]);
+  const { user } = useAuth();
 
   useEffect(() => {
+    if (!user) return;
     fetchLists();
-  }, [refreshFlag]);
+  }, [refreshFlag, user]);
 
   async function fetchLists() {
-    const { data, error } = await supabase
-      .from("shopping_lists")
-      .select("id, name")
-      .order("created_at", { ascending: false });
-
-    if (error) console.error(error);
-    else setLists(data || []);
+    const data = await getShoppingLists(user.id);
+    setLists(data || []);
   }
 
   async function deleteList(id) {
-    const { error } = await supabase.from("shopping_lists").delete().eq("id", id);
-    if (error) console.error(error);
-    else fetchLists();
+    // delete online
+    if (navigator.onLine) {
+      const { error } = await supabase.from("shopping_lists").delete().eq("id", id);
+      if (error) {
+        console.error(error);
+        return;
+      }
+      await fetchLists();
+    } else {
+      // mark as deleted offline (optional: sync later)
+      await db.shopping_lists.delete(id);
+      setLists(await db.shopping_lists.toArray());
+    }
   }
 
   return (

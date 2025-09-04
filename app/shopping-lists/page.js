@@ -5,25 +5,28 @@ import { useAuth } from "../../lib/AuthContext";
 import ShoppingListForm from "../../components/ShoppingListForm";
 import ShoppingLists from "../../components/ShoppingLists";
 import ProtectedRoute from "@/components/ProtectedRoute";
-import { syncItemsFromSupabase } from "../../lib/localDB"; // ✅ now works
+import { syncItemsFromSupabase, syncShoppingListsFromSupabase } from "../../lib/localDB"; // ✅ now works
 
 export default function ShoppingListsPage() {
   const [refreshFlag, setRefreshFlag] = useState(false);
   const { user } = useAuth();
 
-  const syncItems = async () => {
+  const syncAll = async () => {
     if (!user) return;
     try {
-      await syncItemsFromSupabase();
-      console.log("Items synced from Supabase");
+      await Promise.all([
+        syncItemsFromSupabase(),
+        syncShoppingListsFromSupabase(user.id),
+      ]);
+      console.log("Synced items + shopping lists");
     } catch (err) {
-      console.error("Failed to sync items:", err);
+      console.error("Failed to sync:", err);
     }
   };
 
   useEffect(() => {
-    syncItems();
-  }, [user]);
+    syncAll();
+  }, [user, refreshFlag]);
 
   useEffect(() => {
     const handleOnline = () => {
