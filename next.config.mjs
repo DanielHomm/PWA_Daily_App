@@ -17,7 +17,7 @@ const withPWA = withPWAInit({
     },
     // Cache dynamic shopping-list pages
     {
-      urlPattern: /^\/shopping-list\/.*$/i,
+      urlPattern: /^\/shopping-lists\/.*$/i,
       handler: "NetworkFirst",
       options: {
         cacheName: "shopping-list-pages",
