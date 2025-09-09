@@ -3,28 +3,30 @@
 import { useSwipeable } from "react-swipeable";
 import { useState } from "react";
 
-export default function SwipeableListItem({ children, onDelete }) {
+export default function SwipeableListItem({ children, onDelete, threshold = 80 }) {
   const [translateX, setTranslateX] = useState(0);
   const [transition, setTransition] = useState("");
 
   const handlers = useSwipeable({
-    onSwiping: (e) => {
-      if (e.dir === "Left") {
-        setTranslateX(Math.max(-100, -e.deltaX)); // drag left
+    onSwiping: ({ dir, deltaX }) => {
+      if (dir === "Left") {
+        setTranslateX(Math.max(-150, -deltaX)); // drag left up to -150px
       }
     },
-    onSwipedLeft: (e) => {
-      if (e.absX > 50) {
-        // swipe far enough
-        setTranslateX(-200);
-        setTimeout(onDelete, 200); // trigger delete
+    onSwipedLeft: ({ absX }) => {
+      if (absX > threshold) {
+        // swipe far enough -> confirm delete
+        setTranslateX(-300);
+        setTransition("transform 0.2s ease");
+        setTimeout(onDelete, 200);
       } else {
-        // snap back
+        // not far enough -> snap back
         setTranslateX(0);
+        setTransition("transform 0.2s ease");
       }
-      setTransition("transform 0.2s ease");
     },
     onSwipedRight: () => {
+      // reset if swiped right
       setTranslateX(0);
       setTransition("transform 0.2s ease");
     },
@@ -32,13 +34,13 @@ export default function SwipeableListItem({ children, onDelete }) {
   });
 
   return (
-    <div className="relative overflow-hidden" {...handlers}>
-      {/* Delete background */}
+    <div className="relative overflow-hidden select-none" {...handlers}>
+      {/* Background delete area */}
       <div className="absolute inset-0 flex items-center justify-end bg-red-600 text-white pr-4">
         Delete
       </div>
 
-      {/* Foreground (the actual item) */}
+      {/* Foreground (the actual list item) */}
       <div
         className="relative bg-white"
         style={{
