@@ -24,7 +24,7 @@ export default function ShoppingListItems({
                     }
                   }}
                 >
-                  <span>{it.items.name}</span>
+                  <span>{it.items?.name || it.custom_name}</span>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -33,9 +33,8 @@ export default function ShoppingListItems({
                       onChange={(e) => updateQuantity(it.id, e.target.value)}
                       className="w-16 border rounded px-2 py-1"
                     />
-                    <span className="text-sm text-gray-600">
-                      {it.items.unit?.name}
-                    </span>
+                    <span className="text-sm text-gray-600">{it.items?.unit?.name || it.custom_unit}</span>
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();

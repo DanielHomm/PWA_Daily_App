@@ -5,16 +5,29 @@ export default function ShoppingListSearch({
   searchResults,
   onSearch,
   onAdd,
+  onAddCustom,
 }) {
   return (
     <div className="relative mb-6">
-      <input
-        type="text"
-        value={search}
-        onChange={onSearch}
-        placeholder="Search items to add..."
-        className="w-full border rounded px-3 py-2"
-      />
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={search}
+          onChange={onSearch}
+          placeholder="Search items to add..."
+          className="flex-1 border rounded px-3 py-2"
+        />
+        {search.trim() && (
+          <button
+            onClick={() => onAddCustom(search.trim())}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            style={{ cursor: "pointer" }}
+          >
+            Add
+          </button>
+        )}
+      </div>
+
       {searchResults.length > 0 && (
         <ul className="absolute z-10 bg-white border w-full mt-1 rounded shadow">
           {searchResults.map((res) => (
