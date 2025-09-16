@@ -24,6 +24,8 @@ export default function Header() {
     navItems.push({ name: "Messages", href: "/messages" });
     navItems.push({ name: "Profile", href: "/profile" });
     navItems.push({ name: "Grocery", href: "/shopping-lists" });
+    navItems.push({ name: "Supermarkets", href: "/supermarkets" });
+
   }
 
   // Only push Items if admin
