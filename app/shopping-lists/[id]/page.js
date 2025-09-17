@@ -231,7 +231,7 @@ export default function ShoppingListDetailPage() {
                       }
                     }}
                   >
-                    <span className="text-black-600">{it.items?.name || it.custom_name}</span>
+                    <span className="text-blue-600">{it.items?.name || it.custom_name}</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
