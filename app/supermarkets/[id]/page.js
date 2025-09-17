@@ -197,7 +197,7 @@ async function saveOrder() {
         </button>
         <button
           onClick={() => router.push("/supermarkets")}
-          className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-black-900 cursor-pointer"
+          className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-gray-900 cursor-pointer"
         >
           Exit
         </button>
