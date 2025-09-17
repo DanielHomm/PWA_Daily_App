@@ -231,16 +231,16 @@ export default function ShoppingListDetailPage() {
                       }
                     }}
                   >
-                    <span className="text-primary">{it.items?.name || it.custom_name}</span>
+                    <span className="text-black-600">{it.items?.name || it.custom_name}</span>
                     <div className="flex items-center gap-2">
                       <input
                         type="number"
                         min="1"
                         value={it.quantity ?? ""}
                         onChange={(e) => updateQuantity(it.id, e.target.value)}
-                        className="w-16 border rounded px-2 py-1 text-primary"
+                        className="w-16 border rounded px-2 py-1 text-black-600"
                       />
-                      <span className="text-sm text-primary">
+                      <span className="text-sm text-black-600">
                         {it.items?.unit?.name || it.custom_unit}
                       </span>
                       <button

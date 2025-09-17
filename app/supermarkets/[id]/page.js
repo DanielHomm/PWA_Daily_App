@@ -36,7 +36,7 @@ function SortableItem({ id, name }) {
       style={style}
       {...attributes}
       {...listeners}
-      className="p-3 mb-2 border rounded bg-white shadow cursor-grab hover:bg-slate-50 text-primary"
+      className="p-3 mb-2 border rounded bg-white shadow cursor-grab hover:bg-slate-50 text-black-600"
     >
       {name}
     </li>
