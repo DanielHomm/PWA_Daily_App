@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "../../../lib/supabaseClient";
 import ShareModal from "../../../components/ShareModal";
 import { useShoppingList } from "../../../lib/hooks/useShoppingList";
 import SwipeableListItem from "../../../components/shopping_list/SwipeableListItem";
 import ShoppingListSearch from "../../../components/shopping_list/ShoppingListSearch";
+import ShoppingListHeader from "../../../components/shopping_list/ShoppingListHeader";
 
 export default function ShoppingListDetailPage() {
   const { id } = useParams();
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showShare, setShowShare] = useState(false);
+  const [selectedSupermarket, setSelectedSupermarket] = useState("alphabetic");
+  const [supermarketOrder, setSupermarketOrder] = useState([]);
 
   const {
     items,
@@ -23,7 +26,72 @@ export default function ShoppingListDetailPage() {
     deleteItem,
   } = useShoppingList(id);
 
-  // search all items in "items" table
+  // Load shopping list info (incl. supermarket_id)
+  useEffect(() => {
+    async function fetchList() {
+      const { data, error } = await supabase
+        .from("shopping_lists")
+        .select("supermarket_id")
+        .eq("id", id)
+        .single();
+
+      if (error) {
+        console.error("Error fetching shopping list:", error);
+        return;
+      }
+
+      if (data?.supermarket_id) {
+        setSelectedSupermarket(data.supermarket_id);
+      }
+    }
+
+    if (id) fetchList();
+  }, [id]);
+
+  // Fetch supermarket order if selected
+  useEffect(() => {
+    async function fetchOrder() {
+      if (
+        selectedSupermarket === "alphabetic" ||
+        selectedSupermarket === null
+      ) {
+        setSupermarketOrder([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("supermarket_categories")
+        .select("category_id, sort_order, categories(name)")
+        .eq("supermarket_id", selectedSupermarket)
+        .order("sort_order", { ascending: true });
+
+      if (error) {
+        console.error("Error fetching supermarket order:", error);
+        setSupermarketOrder([]);
+      } else {
+        setSupermarketOrder(data || []);
+      }
+    }
+
+    fetchOrder();
+  }, [selectedSupermarket]);
+
+  // Handle supermarket selection (updates DB)
+  async function handleSupermarketChange(newValue) {
+    setSelectedSupermarket(newValue);
+
+    const updateValue = newValue === "alphabetic" ? null : newValue;
+    const { error } = await supabase
+      .from("shopping_lists")
+      .update({ supermarket_id: updateValue })
+      .eq("id", id);
+
+    if (error) {
+      console.error("Error updating shopping list supermarket:", error);
+    }
+  }
+
+  // search items
   async function handleSearch(e) {
     const value = e.target.value;
     setSearch(value);
@@ -44,7 +112,6 @@ export default function ShoppingListDetailPage() {
       return;
     }
 
-    // filter already-added items
     const addedIds = items.map((i) => i.items?.id).filter(Boolean);
     const results = data.map((item) => ({
       ...item,
@@ -54,7 +121,7 @@ export default function ShoppingListDetailPage() {
     setSearchResults(results);
   }
 
-  // Sort items: unmarked grouped by category, marked separately at bottom
+  // Sorting logic
   function groupItems() {
     const unmarked = items.filter((i) => !i.marked);
     const marked = items.filter((i) => i.marked);
@@ -67,8 +134,41 @@ export default function ShoppingListDetailPage() {
       categories[cat].push(i);
     });
 
-    Object.keys(categories).forEach((cat) => {
-      categories[cat].sort((a, b) =>
+    let sortedCategories = {};
+
+    if (
+      selectedSupermarket === "alphabetic" ||
+      supermarketOrder.length === 0
+    ) {
+      // fallback alphabetic
+      Object.keys(categories)
+        .sort((a, b) => a.localeCompare(b))
+        .forEach((cat) => (sortedCategories[cat] = categories[cat]));
+    } else {
+      // order by supermarket
+      supermarketOrder.forEach((o) => {
+        const catName = o.categories?.name;
+        if (categories[catName]) {
+          sortedCategories[catName] = categories[catName];
+        }
+      });
+
+      // add categories not in order
+      Object.keys(categories).forEach((cat) => {
+        if (!sortedCategories[cat]) sortedCategories[cat] = categories[cat];
+      });
+
+      // move "Custom" last
+      if (sortedCategories["Custom"]) {
+        const customItems = sortedCategories["Custom"];
+        delete sortedCategories["Custom"];
+        sortedCategories["Custom"] = customItems;
+      }
+    }
+
+    // sort items inside each category
+    Object.keys(sortedCategories).forEach((cat) => {
+      sortedCategories[cat].sort((a, b) =>
         (a.items?.name || a.custom_name).localeCompare(
           b.items?.name || b.custom_name
         )
@@ -81,7 +181,7 @@ export default function ShoppingListDetailPage() {
       )
     );
 
-    return { categories, marked };
+    return { categories: sortedCategories, marked };
   }
 
   const { categories, marked } = groupItems();
@@ -89,17 +189,13 @@ export default function ShoppingListDetailPage() {
   return (
     <main className="max-w-xl mx-auto p-4">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Shopping List</h1>
-        <button
-          onClick={() => setShowShare(true)}
-          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-        >
-          Share
-        </button>
-      </div>
+      <ShoppingListHeader
+        onShare={() => setShowShare(true)}
+        selectedSupermarket={selectedSupermarket}
+        onSupermarketChange={handleSupermarketChange}
+      />
 
-      {/* Search / add input */}
+      {/* Search */}
       <ShoppingListSearch
         search={search}
         searchResults={searchResults}
@@ -116,15 +212,17 @@ export default function ShoppingListDetailPage() {
         }}
       />
 
-      {/* Items list */}
+      {/* Items */}
       <div className="space-y-6">
-        {/* Unmarked items by category */}
         {Object.entries(categories).map(([cat, items]) => (
           <div key={cat}>
             <h2 className="font-bold text-lg mb-2">{cat}</h2>
             <ul className="space-y-2">
               {items.map((it) => (
-                <SwipeableListItem key={it.id} onDelete={() => deleteItem(it.id)}>
+                <SwipeableListItem
+                  key={it.id}
+                  onDelete={() => deleteItem(it.id)}
+                >
                   <li
                     className="flex justify-between items-center p-3 border rounded cursor-pointer hover:bg-slate-50"
                     onClick={(e) => {
@@ -162,13 +260,15 @@ export default function ShoppingListDetailPage() {
           </div>
         ))}
 
-        {/* Marked items */}
         {marked.length > 0 && (
           <div>
             <h2 className="font-bold text-lg mb-2">Done</h2>
             <ul className="space-y-2">
               {marked.map((it) => (
-                <SwipeableListItem key={it.id} onDelete={() => deleteItem(it.id)}>
+                <SwipeableListItem
+                  key={it.id}
+                  onDelete={() => deleteItem(it.id)}
+                >
                   <li
                     className="flex justify-between items-center p-3 border rounded line-through text-gray-500 cursor-pointer hover:bg-slate-50"
                     onClick={() => toggleMarked(it.id, it.marked)}
@@ -176,7 +276,8 @@ export default function ShoppingListDetailPage() {
                     <span>{it.items?.name || it.custom_name}</span>
                     <div className="flex items-center gap-2">
                       <span className="text-sm">
-                        {it.quantity} {it.items?.unit?.name || it.custom_unit}
+                        {it.quantity}{" "}
+                        {it.items?.unit?.name || it.custom_unit}
                       </span>
                       <button
                         onClick={(e) => {
@@ -196,7 +297,6 @@ export default function ShoppingListDetailPage() {
         )}
       </div>
 
-      {/* Share Modal */}
       {showShare && (
         <ShareModal listId={id} onClose={() => setShowShare(false)} />
       )}
