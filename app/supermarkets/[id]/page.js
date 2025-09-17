@@ -160,7 +160,7 @@ async function saveOrder() {
   return (
     <main className="max-w-xl mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Supermarket Sorting</h1>
-      <p className="mb-4 text-gray-600">
+      <p className="mb-4 text-black-900">
         Drag and drop categories to define the order for this supermarket.
         Changes are only saved when you click <strong>Save</strong>.
       </p>
@@ -174,7 +174,7 @@ async function saveOrder() {
           items={orderedIds}
           strategy={verticalListSortingStrategy}
         >
-          <ul>
+          <ul className="text-gray-900">
             {orderedIds.map((id) => {
               const cat = categories.find((c) => c.id === id);
               return <SortableItem key={id} id={id} name={cat?.name} />;
@@ -197,7 +197,7 @@ async function saveOrder() {
         </button>
         <button
           onClick={() => router.push("/supermarkets")}
-          className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300"
+          className="px-4 py-2 rounded bg-slate-200 hover:bg-slate-300 text-black-900 cursor-pointer"
         >
           Exit
         </button>
