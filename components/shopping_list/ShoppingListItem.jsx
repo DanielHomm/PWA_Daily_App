@@ -27,7 +27,7 @@ export default function ShoppingListItem({
             onChange={(e) => updateQuantity(item.id, e.target.value)}
             className="w-16 border rounded px-2 py-1"
           />
-          <span className="text-text-primary font-medium">
+          <span className="text-primary font-medium">
             {item.items.unit?.name}
           </span>
           <button
