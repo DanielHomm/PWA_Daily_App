@@ -17,7 +17,7 @@ export default function ShoppingListMarked({ marked, toggleMarked, deleteItem })
             >
               <span>{it.items.name}</span>
               <div className="flex items-center gap-2">
-                <span className="text-sm">
+                <span className="text-text-muted sm">
                   {it.quantity} {it.items.unit?.name}
                 </span>
                 <button
