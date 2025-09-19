@@ -1,6 +1,8 @@
 "use client";
 
 import SwipeableListItem from "./SwipeableListItem";
+import ShoppingListItem from "./ShoppingListItem";
+
 
 export default function ShoppingListDone({ marked, toggleMarked, deleteItem }) {
   if (marked.length === 0) return null;
@@ -14,26 +16,12 @@ export default function ShoppingListDone({ marked, toggleMarked, deleteItem }) {
             key={it.id}
             onDelete={() => deleteItem(it.id)}
           >
-            <li
-              className="flex justify-between items-center p-3 border rounded line-through text-gray-500 cursor-pointer hover:bg-slate-50"
-              onClick={() => toggleMarked(it.id, it.marked)}
-            >
-              <span>{it.items?.name || it.custom_name}</span>
-              <div className="flex items-center gap-2">
-                <span className="text-sm">
-                  {it.quantity} {it.items?.unit?.name || it.custom_unit}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteItem(it.id);
-                  }}
-                  className="text-red-600 hover:text-red-800 ml-2"
-                >
-                  ✕
-                </button>
-              </div>
-            </li>
+            <ShoppingListItem
+              item={it}
+              isDone
+              toggleMarked={toggleMarked}
+              deleteItem={deleteItem}
+            />
           </SwipeableListItem>
         ))}
       </ul>

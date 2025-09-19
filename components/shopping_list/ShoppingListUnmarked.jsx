@@ -1,6 +1,7 @@
 "use client";
 
 import SwipeableListItem from "./SwipeableListItem";
+import ShoppingListItem from "./ShoppingListItem";
 
 export default function ShoppingListUnmarked({ 
   categoryName, 
@@ -18,39 +19,12 @@ export default function ShoppingListUnmarked({
             key={it.id}
             onDelete={() => deleteItem(it.id)}
           >
-            <li
-              className="flex justify-between items-center p-3 border rounded cursor-pointer hover:bg-slate-50"
-              onClick={(e) => {
-                if (e.target.tagName.toLowerCase() !== "input") {
-                  toggleMarked(it.id, it.marked);
-                }
-              }}
-            >
-              <span className="text-gray-900">
-                {it.items?.name || it.custom_name}
-              </span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  value={it.quantity ?? ""}
-                  onChange={(e) => updateQuantity(it.id, e.target.value)}
-                  className="w-16 border rounded px-2 py-1 text-gray-900"
-                />
-                <span className="text-sm text-gray-900">
-                  {it.items?.unit?.name || it.custom_unit}
-                </span>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteItem(it.id);
-                  }}
-                  className="text-red-600 hover:text-red-800 ml-2"
-                >
-                  ✕
-                </button>
-              </div>
-            </li>
+            <ShoppingListItem
+              item={it}
+              toggleMarked={toggleMarked}
+              updateQuantity={updateQuantity}
+              deleteItem={deleteItem}
+            />
           </SwipeableListItem>
         ))}
       </ul>
