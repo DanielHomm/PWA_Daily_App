@@ -18,6 +18,7 @@ export default function Header() {
 
   // Base nav items
   const navItems = [{ name: "Home", href: "/" }];
+  navItems.push({ name: "ToDo", href: "/to-do" });
 
   // Only show Messages and Profile if logged in
   if (profile) {

@@ -4,6 +4,8 @@ import Header from '../components/Header';
 
 export const metadata = {
   title: 'Supabase PWA',
+  manifest: "/manifest.json",
+  // themeColor: "#317EFB", 
 };
 
 export default function RootLayout({ children }) {

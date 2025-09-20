@@ -42,6 +42,14 @@ const withPWA = withPWAInit({
         expiration: { maxEntries: 20, maxAgeSeconds: 365 * 24 * 60 * 60 },
       },
     },
+    {
+      urlPattern: /^\/to-do\/?.*$/i,
+      handler: "NetworkFirst",
+      options: {
+        cacheName: "todo-pages",
+        expiration: { maxEntries: 10, maxAgeSeconds: 24 * 60 * 60 },
+      },
+    },
   ],
 });
 
