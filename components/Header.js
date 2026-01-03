@@ -22,15 +22,15 @@ export default function Header() {
 
   // Only show Messages and Profile if logged in
   if (profile) {
-    navItems.push({ name: "Messages", href: "/messages" });
-    navItems.push({ name: "Profile", href: "/profile" });
-    navItems.push({ name: "Grocery", href: "/shopping-lists" });
-    navItems.push({ name: "Supermarkets", href: "/supermarkets" });
-
+    navItems.push({ name: "Challenges", href: "/challenges" });
   }
 
   // Only push Items if admin
   if (isAdmin) {
+    navItems.push({ name: "Messages", href: "/messages" });
+    navItems.push({ name: "Profile", href: "/profile" });
+    navItems.push({ name: "Grocery", href: "/shopping-lists" });
+    navItems.push({ name: "Supermarkets", href: "/supermarkets" });
     navItems.push({ name: "Items", href: "/items" });
   }
 
