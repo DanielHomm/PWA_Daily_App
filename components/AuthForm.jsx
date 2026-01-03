@@ -1,20 +1,21 @@
 "use client";
+
 import { useState } from "react";
-import { useRouter } from "next/navigation"; // ✅ App Router import
+import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../lib/AuthContext";
 import toast from "react-hot-toast";
 
 export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
   const { user } = useAuth();
-  const router = useRouter(); // ✅ now defined
-  const [mode, setMode] = useState(defaultMode); // "login" | "signup"
+  const router = useRouter();
+  const [mode, setMode] = useState(defaultMode);
 
   // login/signup fields
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // extra signup fields
+  // optional signup fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userName, setUserName] = useState("");
@@ -23,57 +24,58 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
 
   async function handleLogin(e) {
     e.preventDefault();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
     if (error) {
       console.error(error);
       toast.error("Login failed", toastOptions);
-    } else {
-      toast.success("Login successful", toastOptions);
-      if (onAuthSuccess) onAuthSuccess();
-      router.push("/"); // optional: redirect after login too
+      return;
     }
+
+    toast.success("Login successful", toastOptions);
+    onAuthSuccess?.();
+    router.push("/");
   }
 
   async function handleSignup(e) {
     e.preventDefault();
-    const { data, error } = await supabase.auth.signUp({
+
+    const { error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          first_name: firstName || null,
+          last_name: lastName || null,
+          user_name: userName || null,
+        },
+      },
     });
+
     if (error) {
       console.error(error);
       toast.error("Sign-up failed: " + error.message, toastOptions);
       return;
     }
 
-    if (data?.user) {
-      const { error: profileError } = await supabase.from("profiles").insert([
-        {
-          id: data.user.id,
-          email,
-          first_name: firstName,
-          last_name: lastName,
-          user_name: userName,
-        },
-      ]);
-      if (profileError) console.error("Error creating profile:", profileError);
-    }
-
     toast.success("Sign-up successful! Check your email.", toastOptions);
-    if (onAuthSuccess) onAuthSuccess();
-    setMode("login"); // back to login after signup
+    setMode("login");
   }
 
   async function handleLogout() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      console.error(error);
       toast.error("Logout failed", toastOptions);
-    } else {
-      toast.success("Logout successful", toastOptions);
-      if (onAuthSuccess) onAuthSuccess();
-      router.push("/");
+      return;
     }
+
+    toast.success("Logout successful", toastOptions);
+    onAuthSuccess?.();
+    router.push("/");
   }
 
   if (user) {
@@ -82,7 +84,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
         <p className="text-black">Logged in as {user.email}</p>
         <button
           onClick={handleLogout}
-          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 cursor-pointer"
+          className="bg-red-500 text-white px-3 py-1 rounded"
         >
           Logout
         </button>
@@ -93,89 +95,83 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
   return (
     <div>
       {mode === "login" ? (
-        <form className="flex flex-col gap-2" onSubmit={handleLogin}>
+        <form onSubmit={handleLogin} className="flex flex-col gap-2">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
             required
+            className="border px-2 py-1"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
             required
+            className="border px-2 py-1"
           />
           <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 cursor-pointer"
-            >
+            <button className="bg-blue-500 text-white px-3 py-1 rounded">
               Login
             </button>
             <button
               type="button"
               onClick={() => setMode("signup")}
-              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 cursor-pointer"
+              className="bg-green-500 text-white px-3 py-1 rounded"
             >
               Sign up
             </button>
           </div>
         </form>
       ) : (
-        <form className="flex flex-col gap-2" onSubmit={handleSignup}>
+        <form onSubmit={handleSignup} className="flex flex-col gap-2">
           <input
             type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
             required
+            className="border px-2 py-1"
           />
           <input
             type="password"
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
             required
+            className="border px-2 py-1"
           />
           <input
             type="text"
             placeholder="First name"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
+            className="border px-2 py-1"
           />
           <input
             type="text"
             placeholder="Last name"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
+            className="border px-2 py-1"
           />
           <input
             type="text"
             placeholder="Username"
             value={userName}
             onChange={(e) => setUserName(e.target.value)}
-            className="border px-2 py-1 bg-white text-black"
+            className="border px-2 py-1"
           />
           <div className="flex gap-2">
-            <button
-              type="submit"
-              className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 cursor-pointer"
-            >
+            <button className="bg-green-500 text-white px-3 py-1 rounded">
               Sign up
             </button>
             <button
               type="button"
               onClick={() => setMode("login")}
-              className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600 cursor-pointer"
+              className="bg-gray-500 text-white px-3 py-1 rounded"
             >
               Back to Login
             </button>
