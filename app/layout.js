@@ -1,21 +1,16 @@
 import './globals.css';
-import { AuthProvider } from '../lib/AuthContext';
-import Header from '../components/Header';
+import ClientProviderLayout from './client-layout';
 
 export const metadata = {
   title: 'Supabase PWA',
   manifest: "/manifest.json",
-  // themeColor: "#317EFB", 
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className="bg-gray-100 min-h-screen">
-        <AuthProvider>
-          <Header />
-          <main className="p-4">{children}</main>
-        </AuthProvider>
+        <ClientProviderLayout>{children}</ClientProviderLayout>
       </body>
     </html>
   );

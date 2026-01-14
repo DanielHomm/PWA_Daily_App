@@ -1,102 +1,27 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../../lib/AuthContext";
-import { supabase } from "../../lib/supabaseClient";
 import toast from "react-hot-toast";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { useChallenges } from "@/lib/hooks/useChallenges";
 
-export default function ChallengesPage() {
+function ChallengesContent() {
   const router = useRouter();
-  const { user, loading: loadingUser } = useAuth();
+  const { challenges, loading, error, deleteChallenge } = useChallenges();
 
-  const [challenges, setChallenges] = useState([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [error, setError] = useState(null);
-  const [deleting, setDeleting] = useState(null); // store id being deleted
-
-  // Redirect if not logged in
-  useEffect(() => {
-    if (!loadingUser && !user) {
-      router.push("/login");
-    }
-  }, [loadingUser, user, router]);
-
-  // Load all challenges for this user
-  async function loadChallenges() {
-    if (!user) return;
-
-    setLoadingData(true);
-    setError(null);
-
-    try {
-      // 1️⃣ Get challenges the user is a member of
-      const { data: mems, error: memError } = await supabase
-        .from("challenge_members")
-        .select("challenge_id, role")
-        .eq("user_id", user.id);
-
-      if (memError) throw memError;
-
-      const challengeIds = mems.map((m) => m.challenge_id);
-
-      if (challengeIds.length === 0) {
-        setChallenges([]);
-        return;
-      }
-
-      // 2️⃣ Fetch challenge details
-      const { data: chData, error: chError } = await supabase
-        .from("challenges")
-        .select("*")
-        .in("id", challengeIds)
-        .order("created_at", { ascending: false });
-
-      if (chError) throw chError;
-
-      // 3️⃣ Merge role info for convenience
-      const merged = chData.map((ch) => {
-        const member = mems.find((m) => m.challenge_id === ch.id);
-        return { ...ch, userRole: member?.role || "member" };
-      });
-
-      setChallenges(merged);
-    } catch (err) {
-      setError(err.message || "Failed to load challenges");
-    } finally {
-      setLoadingData(false);
-    }
-  }
-
-  useEffect(() => {
-    loadChallenges();
-  }, [user]);
-
-  // Delete challenge (owner only)
-  async function handleDelete(challengeId) {
+  const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this challenge?")) return;
 
-    setDeleting(challengeId);
     try {
-      // Delete challenge and cascade to members & check-ins
-      const { error } = await supabase
-        .from("challenges")
-        .delete()
-        .eq("id", challengeId);
-
-      if (error) throw error;
-
+      await deleteChallenge(id);
       toast.success("Challenge deleted");
-      loadChallenges(); // reload list
     } catch (err) {
       toast.error("Failed to delete challenge: " + err.message);
-    } finally {
-      setDeleting(null);
     }
-  }
+  };
 
-  if (loadingUser || loadingData) return <p>Loading...</p>;
-  if (error) return <p className="text-red-600">{error}</p>;
+  if (loading) return <p>Loading challenges…</p>;
+  if (error) return <p className="text-red-600">{error.message}</p>;
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -117,24 +42,25 @@ export default function ChallengesPage() {
           {challenges.map((ch) => (
             <li
               key={ch.id}
-              className="p-4 border rounded flex justify-between items-center hover:shadow cursor-pointer"
+              className="p-4 border rounded flex justify-between items-center hover:shadow"
             >
-              <div onClick={() => router.push(`/challenges/${ch.id}`)}>
+              <div
+                className="cursor-pointer"
+                onClick={() => router.push(`/challenges/${ch.id}`)}
+              >
                 <p className="font-semibold">{ch.name}</p>
                 {ch.description && (
                   <p className="text-sm text-gray-600">{ch.description}</p>
                 )}
-                <p className="text-xs text-gray-500">
-                  Role: {ch.userRole}
-                </p>
+                <p className="text-xs text-gray-500">Role: {ch.userRole}</p>
               </div>
+
               {ch.userRole === "owner" && (
                 <button
                   onClick={() => handleDelete(ch.id)}
-                  disabled={deleting === ch.id}
                   className="ml-4 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                 >
-                  {deleting === ch.id ? "Deleting…" : "Delete"}
+                  Delete
                 </button>
               )}
             </li>
@@ -142,5 +68,13 @@ export default function ChallengesPage() {
         </ul>
       )}
     </div>
+  );
+}
+
+export default function ChallengesPage() {
+  return (
+    <ProtectedRoute>
+      <ChallengesContent />
+    </ProtectedRoute>
   );
 }
