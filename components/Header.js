@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "../lib/AuthContext"; 
+import { useProfile } from "@/lib/hooks/useProfile";
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
 import { Menu, X } from "lucide-react";
@@ -13,7 +14,7 @@ export default function Header() {
   const [authMode, setAuthMode] = useState(null); // "login" | "signup" | null
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const { profile } = useAuth(); 
+  const { data: profile } = useProfile();
   const isAdmin = profile?.role === "admin";
 
   // Base nav items

@@ -2,24 +2,24 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "@/lib/AuthContext";
 
 export default function ProtectedRoute({ children }) {
-  const { user, loading } = useAuth(); // assuming AuthContext provides loading state
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push("/auth");
+      router.replace("/auth");
     }
-  }, [user, loading, router]);
+  }, [loading, user, router]);
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <p className="p-4">Checking authentication…</p>;
   }
 
   if (!user) {
-    return null; // nothing until redirect happens
+    return <p className="p-4">Redirecting…</p>;
   }
 
   return children;
