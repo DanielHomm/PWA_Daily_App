@@ -42,12 +42,10 @@ function ChallengesContent() {
           {challenges.map((ch) => (
             <li
               key={ch.id}
-              className="p-4 border rounded flex justify-between items-center hover:shadow"
+              onClick={() => router.push(`/challenges/${ch.id}`)}
+              className="p-4 border rounded flex justify-between items-center hover:shadow cursor-pointer"
             >
-              <div
-                className="cursor-pointer"
-                onClick={() => router.push(`/challenges/${ch.id}`)}
-              >
+              <div>
                 <p className="font-semibold">{ch.name}</p>
                 {ch.description && (
                   <p className="text-sm text-gray-600">{ch.description}</p>
@@ -57,13 +55,17 @@ function ChallengesContent() {
 
               {ch.userRole === "owner" && (
                 <button
-                  onClick={() => handleDelete(ch.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(ch.id);
+                  }}
                   className="ml-4 bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
                 >
                   Delete
                 </button>
               )}
             </li>
+
           ))}
         </ul>
       )}
