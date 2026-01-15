@@ -48,18 +48,33 @@ export default function BackfillCheckinModal({
         </h2>
 
         <DayPicker
-          mode="single"
-          selected={selectedDay}
-          onSelect={setSelectedDay}
-          disabled={(date) =>
-            date < new Date(challenge.start_date) ||
-            date > new Date(challenge.end_date) ||
-            isSameDay(date, new Date()) ||
-            existingDates.some((d) =>
-              isSameDay(new Date(d), date)
-            )
-          }
-        />
+            mode="single"
+            selected={selectedDay}
+            onSelect={setSelectedDay}
+            disabled={[
+                { before: new Date(challenge.start_date) },
+                { after: new Date(challenge.end_date) },
+                { after: new Date() },
+                (date) =>
+                existingDates.some((d) =>
+                    isSameDay(new Date(d), date)
+                ),
+            ]}
+            className="rounded-md border p-2 bg-white"
+            classNames={{
+                caption: "flex justify-center font-semibold text-gray-900",
+                head_cell: "w-9 text-xs font-medium text-gray-500 text-center",
+                row: "flex w-full mt-2",
+                cell: "w-9 h-9 text-center text-sm",
+                day: "rounded-full hover:bg-gray-200 text-gray-900",
+                day_selected:
+                "bg-green-600 text-white hover:bg-green-600",
+                day_disabled: "text-gray-300 line-through",
+                day_today: "border border-green-500",
+            }}
+            />
+
+
 
         <div className="flex justify-end gap-2">
           <button

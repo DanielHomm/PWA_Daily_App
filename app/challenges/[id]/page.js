@@ -72,9 +72,18 @@ function ChallengeDetailContent() {
       {/* Backfill */}
       <button
         onClick={() => setShowBackfill(true)}
-        className="w-full py-2 border rounded text-sm text-gray-700 hover:bg-gray-50"
+        className="
+          w-full py-3 rounded
+          bg-white text-gray-900
+          border border-gray-300
+          font-medium
+          flex items-center justify-center gap-2
+          hover:bg-gray-100
+          active:bg-gray-200
+        "
       >
-        📅 Check-in nachtragen
+        <span>📅</span>
+        <span>Check-in nachtragen</span>
       </button>
 
       {/* Members */}
