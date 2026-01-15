@@ -33,8 +33,8 @@ export default function BackfillCheckinModal({
     setLoading(false);
 
     if (!error) {
-      onSave();
-      onClose();
+        onSave(format(selectedDay, "yyyy-MM-dd"));
+        onClose();
     } else {
       alert(error.message);
     }

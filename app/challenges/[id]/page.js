@@ -133,7 +133,10 @@ function ChallengeDetailContent() {
         <BackfillCheckinModal
           challenge={challenge}
           existingDates={myCheckinDates}
-          onSave={addCheckinForDate}
+          onSave={async (date) => {
+            await addCheckinForDate(date);
+            refetch();
+          }}
           onClose={() => setShowBackfill(false)}
         />
       )}
