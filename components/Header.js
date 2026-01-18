@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useAuth } from "../lib/AuthContext"; 
 import { useProfile } from "@/lib/hooks/useProfile";
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
@@ -27,7 +26,6 @@ export default function Header() {
 
   // Only push Items if admin
   if (isAdmin) {
-    navItems.push({ name: "ToDo", href: "/to-do" });
     navItems.push({ name: "Messages", href: "/messages" });
     navItems.push({ name: "Profile", href: "/profile" });
     navItems.push({ name: "Grocery", href: "/shopping-lists" });
