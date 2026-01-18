@@ -5,7 +5,7 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InviteMember from "@/components/challenges/InviteMember";
 import BackfillCheckinModal from "@/components/challenges/BackfillCheckinModal";
-import { useChallengeDetail } from "@/lib/hooks/useChallengeDetail";
+import { useChallengeDetail } from "@/lib/hooks/challenges/useChallengeDetail";
 
 function ChallengeDetailContent() {
   const { id } = useParams();

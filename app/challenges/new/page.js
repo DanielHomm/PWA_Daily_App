@@ -4,45 +4,32 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/lib/AuthContext";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function CreateChallengePage() {
   const router = useRouter();
   const { user, loading } = useAuth();
+  const queryClient = useQueryClient();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ Redirect ONLY in effect
+  // ✅ Redirect if not logged in
   useEffect(() => {
     if (!loading && !user) {
       router.push("/login");
     }
   }, [loading, user, router]);
 
-  // ⛔ Block render while loading or redirecting
   if (loading || !user) return null;
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError(null);
-
-    if (!name || !startDate || !endDate) {
-      setError("Please fill in all required fields.");
-      return;
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-      setError("Start date must be before end date.");
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
+  // ---------- Mutation ----------
+  const createChallengeMutation = useMutation(
+    async ({ name, description, startDate, endDate }) => {
+      // 1️⃣ Create challenge
       const { data: challenge, error: challengeError } = await supabase
         .from("challenges")
         .insert({
@@ -57,6 +44,7 @@ export default function CreateChallengePage() {
 
       if (challengeError) throw challengeError;
 
+      // 2️⃣ Add current user as owner
       const { error: memberError } = await supabase
         .from("challenge_members")
         .insert({
@@ -67,13 +55,38 @@ export default function CreateChallengePage() {
 
       if (memberError) throw memberError;
 
-      router.push(`/challenges/${challenge.id}`);
-    } catch (err) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setSubmitting(false);
+      return challenge;
+    },
+    {
+      onSuccess: (challenge) => {
+        // ✅ Invalidate challenges list cache
+        queryClient.invalidateQueries(["challenges", user.id]);
+
+        // ✅ Navigate to the new challenge
+        router.push(`/challenges/${challenge.id}`);
+      },
+      onError: (err) => {
+        setError(err.message || "Something went wrong");
+      },
     }
-  }
+  );
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!name || !startDate || !endDate) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (new Date(startDate) > new Date(endDate)) {
+      setError("Start date must be before end date.");
+      return;
+    }
+
+    createChallengeMutation.mutate({ name, description, startDate, endDate });
+  };
 
   return (
     <div className="max-w-xl mx-auto p-6">
@@ -125,10 +138,10 @@ export default function CreateChallengePage() {
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={createChallengeMutation.isLoading}
           className="w-full bg-black text-white py-2 rounded disabled:opacity-50"
         >
-          {submitting ? "Creating…" : "Create Challenge"}
+          {createChallengeMutation.isLoading ? "Creating…" : "Create Challenge"}
         </button>
       </form>
     </div>
