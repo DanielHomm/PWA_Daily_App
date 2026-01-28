@@ -15,49 +15,59 @@ export default function ChallengeListItem({
   const prefetch = () => {
     queryClient.prefetchQuery({
       queryKey: ["challenge", challenge.id],
-      queryFn: () => fetchChallengesList(),
+      queryFn: () => fetchChallengesList(), // Note: verify this fetcher usage, seems generic
       staleTime: 1000 * 60,
     });
   };
 
   return (
-    <li
+    <div
       onMouseEnter={prefetch}
       onClick={() => onOpen(challenge.id)}
       className="
-        group p-4 border rounded-lg flex justify-between items-center
-        hover:shadow-md hover:bg-gray-50 transition cursor-pointer
+        glass glass-hover rounded-2xl p-6 
+        flex flex-col justify-between h-full min-h-[180px]
+        cursor-pointer group relative overflow-hidden
       "
     >
+      {/* Gradient accent */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 to-teal-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+
       <div>
-        <p className="font-semibold">{challenge.name}</p>
-        {challenge.description && (
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {challenge.description}
-          </p>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          Role: {challenge.userRole}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-xl text-white group-hover:text-emerald-400 transition-colors line-clamp-1">
+            {challenge.name}
+          </h3>
+          {isOwner && (
+            <button
+              disabled={deleting}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(challenge.id);
+              }}
+              className="
+                text-gray-500 hover:text-red-500 p-1 -mr-2 -mt-2 rounded-full hover:bg-white/10 transition
+              "
+              title="Delete Challenge"
+            >
+              {deleting ? "⏳" : "🗑️"}
+            </button>
+          )}
+        </div>
+
+        <p className="text-sm text-gray-400 line-clamp-3 mb-4">
+          {challenge.description || "No description provided."}
         </p>
       </div>
 
-      {isOwner && (
-        <button
-          disabled={deleting}
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(challenge.id);
-          }}
-          className="
-            ml-4 px-2 py-1 text-sm rounded
-            bg-red-500 text-white
-            hover:bg-red-600
-            disabled:opacity-50
-          "
-        >
-          {deleting ? "Deleting…" : "Delete"}
-        </button>
-      )}
-    </li>
+      <div className="flex items-center justify-between text-xs text-gray-500 mt-auto pt-4 border-t border-white/5">
+        <span className={`px-2 py-1 rounded-md bg-white/5 border border-white/10 ${isOwner ? 'text-emerald-400' : 'text-blue-400'}`}>
+          {challenge.userRole === 'owner' ? '👑 Owner' : '👤 Member'}
+        </span>
+        <span className="flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+          View Details →
+        </span>
+      </div>
+    </div>
   );
 }

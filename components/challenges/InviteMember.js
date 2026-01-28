@@ -5,8 +5,8 @@ import { supabase } from "../../lib/supabaseClient";
 
 export default function InviteMember({
   challengeId,
-  refreshMembers, // new callback from parent
-  members,
+  refreshMembers,
+  members = [], // default to empty array
 }) {
   const [username, setUsername] = useState("");
   const [inviting, setInviting] = useState(false);
@@ -23,7 +23,7 @@ export default function InviteMember({
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
         .select("id, user_name")
-        .eq("user_name", username) // use correct column name
+        .eq("user_name", username)
         .single();
 
       if (profileError || !profile) {
@@ -53,7 +53,7 @@ export default function InviteMember({
 
       // 3️⃣ Refresh members in parent
       if (refreshMembers) {
-        await refreshMembers(); // reload from Supabase
+        await refreshMembers();
       }
 
       setUsername("");
@@ -65,25 +65,34 @@ export default function InviteMember({
   }
 
   return (
-    <div className="mt-3">
+    <div className="mt-2">
       <div className="flex gap-2">
         <input
           type="text"
           placeholder="Invite by username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="flex-1 border rounded px-2 py-1"
+          className="
+             flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2 
+             text-white placeholder-gray-500 text-sm
+             focus:outline-none focus:border-emerald-500/50 focus:bg-white/10
+             transition-all
+          "
         />
         <button
           onClick={handleInvite}
           disabled={inviting}
-          className="px-4 py-1 bg-green-600 text-white rounded"
+          className="
+            px-4 py-2 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400
+            border border-emerald-500/20 rounded-xl text-sm font-medium
+            disabled:opacity-50 transition-colors
+          "
         >
-          {inviting ? "Inviting…" : "Add"}
+          {inviting ? "..." : "+ Add"}
         </button>
       </div>
 
-      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-red-400 mt-2 ml-1">{error}</p>}
     </div>
   );
 }

@@ -74,13 +74,17 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
 
   if (user) {
     return (
-      <div className="rounded-xl border bg-white dark:bg-zinc-900 p-6 shadow">
-        <p className="mb-4 text-sm text-zinc-700 dark:text-zinc-300">
-          Logged in as <strong>{user.email}</strong>
+      <div className="glass rounded-2xl p-8 text-center animate-fade-in">
+        <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">👤</span>
+        </div>
+        <p className="mb-6 text-gray-300">
+          Logged in as <br />
+          <strong className="text-white text-lg">{user.email}</strong>
         </p>
         <button
           onClick={handleLogout}
-          className="w-full rounded-lg bg-red-500 py-2 text-white hover:bg-red-600 transition"
+          className="w-full rounded-xl bg-red-500/10 border border-red-500/20 py-3 text-red-500 hover:bg-red-500/20 transition-all font-medium"
         >
           Logout
         </button>
@@ -89,14 +93,17 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
   }
 
   return (
-    <div className="mx-auto w-full max-w-md rounded-xl border bg-white dark:bg-zinc-900 p-8 shadow-lg">
-      <h2 className="mb-6 text-center text-2xl font-semibold text-zinc-900 dark:text-white">
+    <div className="glass rounded-2xl p-8 relative overflow-hidden group">
+      {/* Decorative gradient blob inside card */}
+      <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors duration-500" />
+
+      <h2 className="mb-6 text-center text-2xl font-bold text-white relative z-10">
         {mode === "login" ? "Login" : "Create Account"}
       </h2>
 
       <form
         onSubmit={mode === "login" ? handleLogin : handleSignup}
-        className="space-y-4"
+        className="space-y-4 relative z-10"
       >
         <Input
           label="Email"
@@ -115,32 +122,32 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
         />
 
         {mode === "signup" && (
-          <>
+          <div className="animate-fade-in space-y-4">
             <Input label="First name" value={firstName} onChange={setFirstName} />
             <Input label="Last name" value={lastName} onChange={setLastName} />
             <Input label="Username" value={userName} onChange={setUserName} />
-          </>
+          </div>
         )}
 
         <button
           disabled={loading}
-          className="w-full rounded-lg bg-blue-600 py-2 text-white font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3 text-white font-bold hover:shadow-lg hover:shadow-emerald-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 mt-6"
         >
           {loading
             ? "Please wait..."
             : mode === "login"
-            ? "Login"
-            : "Sign up"}
+              ? "Login"
+              : "Sign up"}
         </button>
       </form>
 
-      <div className="mt-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
+      <div className="mt-6 text-center text-sm text-gray-400 relative z-10">
         {mode === "login" ? (
           <>
             No account?{" "}
             <button
               onClick={() => setMode("signup")}
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
             >
               Sign up
             </button>
@@ -150,7 +157,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
             Already have an account?{" "}
             <button
               onClick={() => setMode("login")}
-              className="font-medium text-blue-600 hover:underline"
+              className="font-medium text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
             >
               Login
             </button>
@@ -166,7 +173,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
 function Input({ label, type = "text", value, onChange, required }) {
   return (
     <div>
-      <label className="mb-1 block text-sm font-medium text-zinc-700 dark:text-zinc-300">
+      <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-gray-400">
         {label}
       </label>
       <input
@@ -175,11 +182,12 @@ function Input({ label, type = "text", value, onChange, required }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="
-          w-full rounded-lg border border-zinc-300 dark:border-zinc-700
-          bg-white dark:bg-zinc-800
-          px-3 py-2 text-zinc-900 dark:text-white
-          placeholder-zinc-400
-          focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20
+          w-full rounded-xl border border-white/10
+          bg-white/5
+          px-4 py-3 text-white
+          placeholder-gray-500
+          transition-all
+          focus:border-emerald-500/50 focus:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500/20
         "
       />
     </div>
