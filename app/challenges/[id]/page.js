@@ -60,8 +60,19 @@ function ChallengeDetailContent() {
 
         <div className="relative z-10">
           <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">{challenge.name}</h1>
+            <div className="flex-grow">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold text-white">{challenge.name}</h1>
+                {isOwner && (
+                  <a
+                    href={`/challenges/${id}/edit`}
+                    className="p-2 bg-white/10 hover:bg-white/20 rounded-xl text-gray-300 transition-colors"
+                    title="Edit Challenge"
+                  >
+                    ⚙️
+                  </a>
+                )}
+              </div>
               <p className="text-gray-400 max-w-lg leading-relaxed">
                 {challenge.description}
               </p>
