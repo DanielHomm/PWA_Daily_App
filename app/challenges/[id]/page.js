@@ -13,6 +13,7 @@ function ChallengeDetailContent() {
 
   const {
     challenge,
+    subChallenges,
     memberStats,
     isOwner,
     loading,
@@ -20,8 +21,9 @@ function ChallengeDetailContent() {
     globalProgress,
     elapsedDays,
     totalDays,
-    doneToday,
-    myCheckinDates,
+    myCheckins,
+    isTaskDoneOnDate,
+    isCheckInAllowedForTask, // New helper
     checkInToday,
     addCheckinForDate,
     removeMember,
@@ -46,6 +48,9 @@ function ChallengeDetailContent() {
   // Format dates
   const startDate = new Date(challenge.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   const endDate = new Date(challenge.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+  // Fallback for challenges without sub-challenges (Legacy support)
+  const tasks = subChallenges.length > 0 ? subChallenges : [{ id: null, title: "Daily Goal", frequency: "daily" }];
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-fade-in pb-20">
@@ -87,42 +92,82 @@ function ChallengeDetailContent() {
 
       {/* Main Action Area */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Check-in Card */}
-        <div className="glass rounded-3xl p-8 flex flex-col items-center justify-center text-center space-y-6">
-          <h2 className="text-lg font-semibold text-gray-300">Daily Check-in</h2>
+        {/* Check-ins Card */}
+        <div className="glass rounded-3xl p-6 md:p-8 flex flex-col space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-gray-300">Your Tasks</h2>
+            <button
+              onClick={() => setShowBackfill(true)}
+              className="text-xs text-emerald-400 hover:text-emerald-300 underline decoration-dotted"
+            >
+              Backfill
+            </button>
+          </div>
 
-          <button
-            onClick={checkInToday}
-            disabled={doneToday}
-            className={`
-              relative w-40 h-40 rounded-full flex items-center justify-center
-              transition-all duration-300 group
-              ${doneToday
-                ? "bg-emerald-500/20 text-emerald-400 cursor-default ring-4 ring-emerald-500/20"
-                : "bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/40 hover:scale-105 active:scale-95 cursor-pointer ring-4 ring-emerald-500/30 hover:ring-emerald-400/50"
-              }
-            `}
-          >
-            {doneToday ? (
-              <div className="flex flex-col items-center animate-fade-in">
-                <span className="text-5xl mb-2">✅</span>
-                <span className="font-bold">Done!</span>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center">
-                <span className="text-4xl mb-2 group-hover:scale-110 transition-transform">⚡</span>
-                <span className="font-bold text-lg">I did it</span>
-              </div>
-            )}
-          </button>
+          <div className="space-y-4">
+            {tasks.map((task) => {
+              const dateStr = new Date().toLocaleDateString('en-CA');
+              const isDone = isTaskDoneOnDate(dateStr, task.id);
 
-          <button
-            onClick={() => setShowBackfill(true)}
-            className="text-sm text-gray-500 hover:text-emerald-400 transition-colors flex items-center gap-1"
-          >
-            <span>Forgot previous days?</span>
-            <span className="underline decoration-dotted">Backfill</span>
-          </button>
+              // Only check allowance if NOT done (if done, it's disabled anyway)
+              // We pass 'new Date()' for today
+              const isAllowed = isDone || isCheckInAllowedForTask(new Date(), task);
+
+              return (
+                <div
+                  key={task.id || 'legacy'}
+                  className={`
+                    group relative overflow-hidden rounded-2xl p-4 border transition-all duration-300
+                    ${isDone
+                      ? "bg-emerald-500/10 border-emerald-500/20"
+                      : isAllowed
+                        ? "bg-white/5 border-white/10 hover:border-emerald-500/30 hover:bg-white/10"
+                        : "bg-black/20 border-white/5 opacity-60 cursor-not-allowed"
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-between relative z-10">
+                    <div>
+                      <h3 className={`font-bold transition-colors ${isDone ? "text-emerald-400" : isAllowed ? "text-white" : "text-gray-500"}`}>
+                        {task.title}
+                      </h3>
+                      <div className="flex gap-2 mt-1">
+                        <span className="text-xs text-gray-400 capitalize bg-white/5 inline-block px-2 py-0.5 rounded-lg">
+                          {task.frequency.replace(/_/g, " ")}
+                        </span>
+                        {!isAllowed && !isDone && (
+                          <span className="text-xs text-orange-400 bg-orange-400/10 inline-block px-2 py-0.5 rounded-lg">
+                            Locked
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => isAllowed && !isDone && checkInToday(task.id)}
+                      disabled={isDone || !isAllowed}
+                      className={`
+                        w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300
+                        ${isDone
+                          ? "bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110"
+                          : isAllowed
+                            ? "bg-white/10 text-gray-500 hover:bg-emerald-500 hover:text-white cursor-pointer"
+                            : "bg-white/5 text-gray-600 cursor-not-allowed"
+                        }
+                      `}
+                    >
+                      {isDone ? "✓" : isAllowed ? "⚡" : "🔒"}
+                    </button>
+                  </div>
+
+                  {/* Progress fill animation on complete */}
+                  <div
+                    className={`absolute inset-0 bg-emerald-500/5 transition-transform duration-500 origin-left ${isDone ? "scale-x-100" : "scale-x-0"}`}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Top Member / Stats Placeholder */}
@@ -170,8 +215,8 @@ function ChallengeDetailContent() {
               </div>
 
               <div className="flex-grow min-w-0">
-                <div className="flex justify-between items-baseline">
-                  <span className="font-medium text-white truncate">
+                <div className="flex justify-between items-baseline mb-2">
+                  <span className="font-medium text-white truncate text-lg">
                     {m.displayName}
                     {m.role === "owner" && <span className="ml-2 text-xs text-yellow-500">👑</span>}
                   </span>
@@ -186,22 +231,27 @@ function ChallengeDetailContent() {
                   )}
                 </div>
 
-                {/* Progress Mini Bar */}
-                <div className="mt-2 flex items-center gap-3">
-                  <div className="flex-grow h-2 bg-gray-700/50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-emerald-500 rounded-full"
-                      style={{ width: `${m.percent}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-emerald-400 font-mono min-w-[3ch] text-right">
-                    {m.percent}%
-                  </span>
+                {/* Per-Task Progress Bars */}
+                <div className="space-y-3">
+                  {m.taskStats.map((stat) => (
+                    <div key={stat.id} className="text-sm">
+                      <div className="flex justify-between text-xs text-gray-400 mb-1">
+                        <span>{stat.title}</span>
+                        <span>{stat.percent}%</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-700/50 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-emerald-500 rounded-full"
+                          style={{ width: `${stat.percent}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                <div className="mt-1 flex gap-4 text-xs text-gray-500">
-                  <span>✅ {m.completed} days</span>
-                  <span>❌ {m.missed} days</span>
+                {/* Summary Stats (Optional checkmark count) */}
+                <div className="mt-3 text-xs text-gray-500 text-right">
+                  Total Check-ins: <span className="text-gray-300 font-mono">{m.completed}</span>
                 </div>
               </div>
             </div>
@@ -220,9 +270,22 @@ function ChallengeDetailContent() {
       {showBackfill && (
         <BackfillCheckinModal
           challenge={challenge}
-          existingDates={myCheckinDates}
-          onSave={async (date) => {
-            await addCheckinForDate(date);
+          subChallenges={tasks}
+          // Updated validation prop
+          isTaskDoneOnDate={(dateStr, subId) => {
+            // 1. Is it done?
+            const done = isTaskDoneOnDate(dateStr, subId);
+            if (done) return true; // Disabled because done
+
+            // 2. Is it allowed by frequency?
+            // Find task
+            const task = tasks.find(t => t.id === subId);
+            if (!task) return false;
+
+            // If NOT allowed, we return TRUE (disabled)
+            return !isCheckInAllowedForTask(new Date(dateStr), task);
+          }}
+          onSave={() => {
             refetch();
           }}
           onClose={() => setShowBackfill(false)}
