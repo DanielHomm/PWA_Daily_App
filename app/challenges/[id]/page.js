@@ -5,11 +5,16 @@ import { useState } from "react";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import InviteMember from "@/components/challenges/InviteMember";
 import BackfillCheckinModal from "@/components/challenges/BackfillCheckinModal";
+import TransferOwnershipModal from "@/components/challenges/TransferOwnershipModal";
 import { useChallengeDetail } from "@/lib/hooks/challenges/useChallengeDetail";
+import { leaveChallenge, transferOwnership } from "@/lib/data/challenge/challenge.members";
+import { deleteChallengeById } from "@/lib/data/challenge/challengesList.mutations";
+import toast from "react-hot-toast";
 
 function ChallengeDetailContent() {
   const { id } = useParams();
   const [showBackfill, setShowBackfill] = useState(false);
+  const [showTransfer, setShowTransfer] = useState(false);
 
   const {
     challenge,
@@ -50,7 +55,53 @@ function ChallengeDetailContent() {
   const endDate = new Date(challenge.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   // Fallback for challenges without sub-challenges (Legacy support)
+  // Fallback for challenges without sub-challenges (Legacy support)
   const tasks = subChallenges.length > 0 ? subChallenges : [{ id: null, title: "Daily Goal", frequency: "daily" }];
+
+  // ---------- Action Handlers ----------
+
+  const handleLeaveChallenge = async () => {
+    if (isOwner) {
+      // Check if there are other members
+      if (members.length <= 1) {
+        if (confirm("You are the only member. Leaving will DELETE the challenge. Continue?")) {
+          await deleteChallengeById(id);
+          router.push("/challenges");
+          toast.success("Challenge deleted");
+        }
+      } else {
+        // Must transfer ownership first
+        setShowTransfer(true);
+      }
+    } else {
+      // Normal Member
+      if (confirm("Are you sure you want to leave this challenge?")) {
+        try {
+          await leaveChallenge(id);
+          toast.success("Left challenge");
+          router.push("/challenges");
+        } catch (err) {
+          toast.error("Failed to leave");
+        }
+      }
+    }
+  };
+
+  const handleTransferAndLeave = async (newOwnerId) => {
+    try {
+      const { data: { user } } = await import("@/lib/supabaseClient").then(m => m.supabase.auth.getUser());
+      await transferOwnership(id, user.id, newOwnerId);
+      // After transfer, we are now a 'member'. Now we leave.
+      await leaveChallenge(id);
+
+      setShowTransfer(false);
+      router.push("/challenges");
+      toast.success("Ownership transferred and challenge left successfully");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to transfer ownership");
+    }
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8 animate-fade-in pb-20">
@@ -72,6 +123,13 @@ function ChallengeDetailContent() {
                     ⚙️
                   </a>
                 )}
+                <button
+                  onClick={handleLeaveChallenge}
+                  className="ml-auto md:ml-2 p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl transition-colors text-xs font-bold uppercase tracking-wider"
+                  title="Leave Challenge"
+                >
+                  Leave
+                </button>
               </div>
               <p className="text-gray-400 max-w-lg leading-relaxed">
                 {challenge.description}
@@ -300,6 +358,16 @@ function ChallengeDetailContent() {
             refetch();
           }}
           onClose={() => setShowBackfill(false)}
+        />
+      )}
+
+      {/* Transfer Ownership Modal */}
+      {showTransfer && (
+        <TransferOwnershipModal
+          members={members}
+          currentUserId={members.find(m => m.role === 'owner')?.user_id} // Rough check, assuming I am owner if modal is shown
+          onConfirm={handleTransferAndLeave}
+          onCancel={() => setShowTransfer(false)}
         />
       )}
     </div>
