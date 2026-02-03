@@ -3,15 +3,17 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ListChecks, Refrigerator, UtensilsCrossed, Calendar } from "lucide-react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function GroceriesNav() {
     const pathname = usePathname();
+    const { t } = useLanguage();
 
     const links = [
-        { href: "/groceries/inventory", label: "Inventory", icon: <Refrigerator size={20} /> },
-        { href: "/groceries/shopping-list", label: "Shopping List", icon: <ListChecks size={20} /> },
-        { href: "/groceries/recipes", label: "Meals", icon: <UtensilsCrossed size={20} /> },
-        { href: "/groceries/planner", label: "Plan", icon: <Calendar size={20} /> },
+        { href: "/groceries/inventory", label: t("nav_inventory"), icon: <Refrigerator size={20} /> },
+        { href: "/groceries/shopping-list", label: t("nav_list"), icon: <ListChecks size={20} /> },
+        { href: "/groceries/recipes", label: t("nav_meals"), icon: <UtensilsCrossed size={20} /> },
+        { href: "/groceries/planner", label: t("nav_plan"), icon: <Calendar size={20} /> },
     ];
 
     return (

@@ -9,8 +9,10 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import ItemSearchCombobox from "@/components/groceries/ItemSearchCombobox";
 import { useInventory } from "@/lib/hooks/groceries/useInventory";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function RecipeDetailPage() {
+    const { t, language } = useLanguage();
     const { id } = useParams();
     const router = useRouter();
     const { recipe, isLoading, updateRecipe, addIngredient, deleteIngredient } = useRecipeDetail(id);
@@ -67,8 +69,20 @@ export default function RecipeDetailPage() {
         if (data.unit) setNewIngUnit(data.unit);
     };
 
+    const getIngName = (ing) => {
+        if (ing.common_item) {
+            if (language === 'de' && ing.common_item.name_de) return ing.common_item.name_de;
+            return ing.common_item.name;
+        }
+        return ing.name;
+    };
+
     const handleAddToShoppingList = async () => {
-        if (!confirm(`Add ingredients for ${desiredServings} people to Shopping List?`)) return;
+        const confirmMsg = language === 'de'
+            ? `Zutaten für ${desiredServings} Personen zur Einkaufsliste hinzufügen?`
+            : `Add ingredients for ${desiredServings} people to Shopping List?`;
+
+        if (!confirm(confirmMsg)) return;
 
         let addedCount = 0;
         for (const ing of recipe.ingredients) {
@@ -89,6 +103,18 @@ export default function RecipeDetailPage() {
 
             // Add to list
             await addToShoppingList({
+                name: getIngName(ing), // Use localized name for the list item name? Maybe better to store the English name or CommonID?
+                // The API for `addToShoppingList` likely takes `commonItemId`. If so, backend/shopping list logic handles naming if it's a common item.
+                // But `addItem` in hook usually takes `name`.
+                // If I pass `commonItemId`, `getOrCreateProduct` will link it.
+                // I should pass the English name if possible to keep DB consistent, BUT if `addItem` uses the name to display, we might want the localized one?
+                // Actually, products table name is usually English or user input.
+                // If I pass `ing.common_item.name` (English), it finds/creates product "Milk".
+                // If I pass "Milch", it creates product "Milch" or finds it.
+                // Ideally products should be unique by Common Item regardless of name.
+                // For now, let's pass `ing.common_item?.name || ing.name` (English preferred for consistency)
+                // BUT wait, `addItem` uses the name.
+                // Let's stick to English name if common item exists, so products are shared.
                 name: ing.common_item?.name || ing.name,
                 commonItemId: ing.common_item_id,
                 quantity: Math.ceil(scaledQty * 10) / 10, // Round to 1 decimal
@@ -97,7 +123,7 @@ export default function RecipeDetailPage() {
             });
             addedCount++;
         }
-        toast.success(`Added ${addedCount} items to list!`);
+        toast.success(`${addedCount} items added!`);
         router.push("/groceries/shopping-list");
     };
 
@@ -115,7 +141,7 @@ export default function RecipeDetailPage() {
                     onClick={handleAddToShoppingList}
                     className="flex items-center gap-2 bg-emerald-500 px-4 py-2 rounded-xl text-white font-bold shadow-lg shadow-emerald-500/20"
                 >
-                    <ShoppingCart size={18} /> Shop
+                    <ShoppingCart size={18} /> {t('shop')}
                 </button>
             </div>
 
@@ -126,7 +152,7 @@ export default function RecipeDetailPage() {
                         <ChefHat size={24} />
                     </div>
                     <div>
-                        <div className="text-sm text-gray-400">Cooking for</div>
+                        <div className="text-sm text-gray-400">{t('cooking_for')}</div>
                         <div className="flex items-center gap-3 mt-1">
                             <button
                                 onClick={() => setDesiredServings(Math.max(1, desiredServings - 1))}
@@ -141,7 +167,7 @@ export default function RecipeDetailPage() {
                             >
                                 +
                             </button>
-                            <span className="text-gray-500 ml-1">people</span>
+                            <span className="text-gray-500 ml-1">{t('people')}</span>
                         </div>
                     </div>
                 </div>
@@ -151,7 +177,7 @@ export default function RecipeDetailPage() {
                         onClick={handleUpdateServings}
                         className="text-xs text-orange-400 hover:text-orange-300 underline"
                     >
-                        Save as default ({recipe.default_servings})
+                        {t('save_as_default')} ({recipe.default_servings})
                     </button>
                 )}
             </div>
@@ -159,12 +185,12 @@ export default function RecipeDetailPage() {
             {/* Ingredients */}
             <div className="space-y-4">
                 <div className="flex justify-between items-center">
-                    <h2 className="text-lg font-bold text-white">Ingredients</h2>
+                    <h2 className="text-lg font-bold text-white">{t('ingredients')}</h2>
                     <button
                         onClick={() => setIsAddingIngredient(true)}
                         className="text-xs bg-white/10 px-3 py-1.5 rounded-lg text-emerald-400 hover:bg-white/15"
                     >
-                        + Add Ingredient
+                        + {t('add_ingredient')}
                     </button>
                 </div>
 
@@ -177,7 +203,7 @@ export default function RecipeDetailPage() {
                                 value={newIngQty}
                                 onChange={e => setNewIngQty(e.target.value)}
                                 className="w-20 bg-black/20 border border-white/10 rounded-lg px-3 py-2 text-white outline-none"
-                                placeholder="Qty"
+                                placeholder={t('qty') || "Qty"}
                                 min="0"
                                 step={['pcs', 'units', 'pack', 'can', 'g', 'ml'].includes(newIngUnit) ? "1" : "0.1"}
                             />
@@ -195,7 +221,7 @@ export default function RecipeDetailPage() {
                                 <option value="pack">pack</option>
                                 <option value="can">can</option>
                             </select>
-                            <button className="flex-1 bg-emerald-500 text-white font-bold rounded-lg py-2">Add</button>
+                            <button className="flex-1 bg-emerald-500 text-white font-bold rounded-lg py-2">{t('add') || 'Add'}</button>
                         </div>
                     </form>
                 )}
@@ -208,7 +234,7 @@ export default function RecipeDetailPage() {
                                 <div className="flex items-center gap-3">
                                     <span className="text-xl">{ing.common_item?.icon || '🧂'}</span>
                                     <div>
-                                        <div className="text-white font-medium">{ing.common_item?.name || ing.name}</div>
+                                        <div className="text-white font-medium">{getIngName(ing)}</div>
                                         <div className="text-xs text-gray-400">
                                             Base: {ing.quantity} {ing.unit}
                                         </div>

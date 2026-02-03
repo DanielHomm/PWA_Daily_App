@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import { X, Calendar } from "lucide-react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 import ItemSearchCombobox from "./ItemSearchCombobox";
 
 export default function AddItemModal({ categories, onClose, onAdd }) {
+    const { t } = useLanguage();
     const [name, setName] = useState("");
     const [categoryId, setCategoryId] = useState("");
     const [location, setLocation] = useState("fridge");
@@ -63,7 +65,7 @@ export default function AddItemModal({ categories, onClose, onAdd }) {
 
                 {/* Header */}
                 <div className="p-6 border-b border-white/10 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-white">Add Item</h2>
+                    <h2 className="text-xl font-bold text-white">{t('add_item')}</h2>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors">
                         <X size={20} className="text-gray-400" />
                     </button>
@@ -86,10 +88,10 @@ export default function AddItemModal({ categories, onClose, onAdd }) {
                                     onChange={e => setCategoryId(e.target.value)}
                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 appearance-none"
                                 >
-                                    <option value="">Select...</option>
+                                    <option value="">{t('all')}</option>
                                     {categories.map(cat => (
                                         <option key={cat.id} value={cat.id}>
-                                            {cat.icon} {cat.name}
+                                            {cat.icon} {t(cat.name) || cat.name}
                                         </option>
                                     ))}
                                 </select>
@@ -101,9 +103,9 @@ export default function AddItemModal({ categories, onClose, onAdd }) {
                                     onChange={e => setLocation(e.target.value)}
                                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 appearance-none"
                                 >
-                                    <option value="fridge">Fridge</option>
-                                    <option value="pantry">Pantry</option>
-                                    <option value="freezer">Freezer</option>
+                                    <option value="fridge">{t('fridge')}</option>
+                                    <option value="pantry">{t('pantry')}</option>
+                                    <option value="freezer">{t('freezer')}</option>
                                 </select>
                             </div>
                         </div>
@@ -164,7 +166,7 @@ export default function AddItemModal({ categories, onClose, onAdd }) {
                         disabled={!name.trim()}
                         className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20"
                     >
-                        Add Item
+                        {t('add_item')}
                     </button>
                 </form>
             </div>

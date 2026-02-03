@@ -8,13 +8,16 @@ import AddItemModal from "@/components/groceries/AddItemModal";
 import AddPriceModal from "@/components/groceries/AddPriceModal";
 import toast from "react-hot-toast";
 import { Tag } from "lucide-react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function InventoryPage() {
+    const { t } = useLanguage();
     const { households, isLoading: householdsLoading } = useHouseholds();
     const activeHousehold = households?.[0];
 
-    const { inventory, categories, isLoading: inventoryLoading, addItem, deleteItem } = useInventory(activeHousehold?.id);
+    // ... (rest of logic)
 
+    const { inventory, categories, isLoading: inventoryLoading, addItem, deleteItem } = useInventory(activeHousehold?.id);
     const [activeTab, setActiveTab] = useState("fridge"); // fridge, freezer, pantry
     const [showAddModal, setShowAddModal] = useState(false);
     const [activePriceItem, setActivePriceItem] = useState(null);
@@ -27,15 +30,10 @@ export default function InventoryPage() {
         );
     }
 
-    // If no household, force setup
     if (!households || households.length === 0) {
         return <HouseholdSetup />;
     }
 
-    // DEBUG: Check item structure
-    console.log("Inventory Data:", inventory);
-
-    // Filter items by location
     const filteredItems = inventory.filter(item => item.location === activeTab);
 
     const handleAddItem = async (itemData) => {
@@ -60,7 +58,7 @@ export default function InventoryPage() {
             <header className="flex justify-between items-center mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-white transition-all">{activeHousehold.name}</h1>
-                    <p className="text-sm text-gray-400">Inventory</p>
+                    <p className="text-sm text-gray-400">{t('nav_inventory')}</p>
                 </div>
             </header>
 
@@ -76,7 +74,7 @@ export default function InventoryPage() {
                                 : "bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10"
                             }`}
                     >
-                        {loc}
+                        {t(loc)}
                     </button>
                 ))}
             </div>
@@ -88,13 +86,13 @@ export default function InventoryPage() {
                         <div className="text-4xl mb-4 opacity-50">
                             {activeTab === 'fridge' ? '🥬' : activeTab === 'freezer' ? '🧊' : '🥫'}
                         </div>
-                        <p>Your {activeTab} is empty.</p>
+                        <p>{t(activeTab)} {t('is_empty')}.</p>
                         {/* Empty State Action Button */}
                         <button
                             onClick={() => setShowAddModal(true)}
                             className="mt-4 px-6 py-2 bg-emerald-500/10 text-emerald-400 rounded-xl hover:bg-emerald-500/20 font-medium transition-colors"
                         >
-                            + Add first item
+                            + {t('add_item')}
                         </button>
                     </div>
                 ) : (

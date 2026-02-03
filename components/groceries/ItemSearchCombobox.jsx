@@ -3,8 +3,10 @@
 import { useState, useEffect, useRef } from "react";
 import { searchCommonItems } from "@/lib/data/groceries/groceries.api";
 import { Search } from "lucide-react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function ItemSearchCombobox({ onSelect, categories }) {
+    const { t, language } = useLanguage();
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
@@ -16,7 +18,7 @@ export default function ItemSearchCombobox({ onSelect, categories }) {
         const timer = setTimeout(async () => {
             if (query.length >= 2) {
                 setLoading(true);
-                const items = await searchCommonItems(query);
+                const items = await searchCommonItems(query, language);
                 setResults(items);
                 setLoading(false);
                 setIsOpen(true);
@@ -40,15 +42,21 @@ export default function ItemSearchCombobox({ onSelect, categories }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    const getName = (item) => {
+        if (language === 'de' && item.name_de) return item.name_de;
+        return item.name;
+    };
+
     const handleSelect = (item) => {
-        setQuery(item.name);
+        const localizedName = getName(item);
+        setQuery(localizedName);
         setIsOpen(false);
 
         // Find category ID based on name match
         const category = categories.find(c => c.name === item.category_name);
 
         onSelect({
-            name: item.name,
+            name: localizedName,
             categoryId: category?.id,
             unit: item.default_unit,
             commonItemId: item.id
@@ -70,7 +78,7 @@ export default function ItemSearchCombobox({ onSelect, categories }) {
                     type="text"
                     value={query}
                     onChange={handleInputChange}
-                    placeholder="Search e.g. Milk..."
+                    placeholder={t('search_placeholder')}
                     className="w-full bg-black/20 border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors"
                     autoFocus
                 />
@@ -89,9 +97,9 @@ export default function ItemSearchCombobox({ onSelect, categories }) {
                         >
                             <span className="text-xl">{item.icon || '📦'}</span>
                             <div>
-                                <div className="text-white font-medium">{item.name}</div>
+                                <div className="text-white font-medium">{getName(item)}</div>
                                 <div className="text-xs text-gray-400">
-                                    {item.category_name} • {item.default_unit}
+                                    {t(item.category_name) || item.category_name} • {item.default_unit}
                                 </div>
                             </div>
                         </button>

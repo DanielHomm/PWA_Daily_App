@@ -6,8 +6,10 @@ import { useRecipes } from "@/lib/hooks/groceries/useRecipes";
 import Link from "next/link";
 import { Plus, ChevronRight, Utensils, Clock, Users, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function RecipesPage() {
+    const { t } = useLanguage();
     const { households } = useHouseholds();
     const activeHousehold = households?.[0];
     const { recipes = [], isLoading, createRecipe, deleteRecipe } = useRecipes(activeHousehold?.id);
@@ -27,7 +29,7 @@ export default function RecipesPage() {
             });
             setNewRecipeName("");
             setIsCreating(false);
-            toast.success("Recipe created!");
+            toast.success(t('recipe_created') || "Recipe created!");
         } catch (err) {
             toast.error("Failed to create recipe");
         }
@@ -47,8 +49,8 @@ export default function RecipesPage() {
         <div className="max-w-4xl mx-auto p-4 space-y-6 pb-24">
             <header className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-white">Recipes</h1>
-                    <p className="text-sm text-gray-400">Meal Planning</p>
+                    <h1 className="text-2xl font-bold text-white">{t('recipes')}</h1>
+                    <p className="text-sm text-gray-400">{t('meal_planner')}</p>
                 </div>
                 <button
                     onClick={() => setIsCreating(!isCreating)}
@@ -80,8 +82,8 @@ export default function RecipesPage() {
                 {recipes?.length === 0 ? (
                     <div className="text-center py-12 text-gray-500 border border-dashed border-white/10 rounded-2xl">
                         <Utensils className="mx-auto mb-3 opacity-50" size={32} />
-                        <p>No recipes yet.</p>
-                        <p className="text-sm">Create your first meal plan above.</p>
+                        <p>{t('no_recipes')}</p>
+                        <p className="text-sm">{t('create_first_recipe')}</p>
                     </div>
                 ) : (
                     recipes.map(recipe => (
@@ -102,10 +104,10 @@ export default function RecipesPage() {
                                             </span>
                                         )}
                                         <span className="flex items-center gap-1">
-                                            <Users size={12} /> {recipe.default_servings} ppl
+                                            <Users size={12} /> {recipe.default_servings} {t('people') || 'ppl'}
                                         </span>
                                         <span className="bg-white/5 px-2 py-0.5 rounded">
-                                            {recipe.ingredients?.[0]?.count || 0} ingredients
+                                            {recipe.ingredients?.[0]?.count || 0} {t('ingredients')}
                                         </span>
                                     </div>
                                 </div>

@@ -4,26 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useLanguage } from "@/lib/context/LanguageContext";
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Globe } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
   const [authMode, setAuthMode] = useState(null); // "login" | "signup" | null
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { t, language, toggleLanguage } = useLanguage();
 
   const { data: profile } = useProfile();
   const isAdmin = profile?.role === "admin";
 
   // Base nav items
   const navItems = [
-    { name: "Hub", href: "/dashboard" },
-    { name: "Challenges", href: "/challenges" },
+    { name: t("dashboard"), href: "/dashboard" },
+    { name: t("challenges"), href: "/challenges" },
   ];
 
   if (isAdmin) {
-    navItems.push({ name: "Household", href: "/groceries/inventory" });
+    navItems.push({ name: t("nav_inventory"), href: "/groceries/inventory" });
   }
 
 
@@ -62,6 +64,15 @@ export default function Header() {
             );
           })}
         </ul>
+
+        {/* Language Toggle (Desktop) */}
+        <button
+          onClick={toggleLanguage}
+          className="hidden sm:flex items-center gap-1 mx-4 text-sm font-mono text-gray-300 hover:text-white"
+        >
+          <Globe size={16} />
+          {language === 'en' ? 'EN' : 'DE'}
+        </button>
 
         {/* Desktop Auth Buttons */}
         <div className="hidden sm:block">
