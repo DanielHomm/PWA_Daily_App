@@ -5,8 +5,9 @@ import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
 import toast from "react-hot-toast";
 
 export default function HouseholdSetup() {
-    const { createHousehold, isCreating } = useHouseholds();
+    const { createHousehold, joinHousehold, isCreating } = useHouseholds();
     const [name, setName] = useState("");
+    const [joinCode, setJoinCode] = useState("");
     const [view, setView] = useState("create"); // 'create' | 'join'
 
     const handleCreate = async (e) => {
@@ -16,9 +17,20 @@ export default function HouseholdSetup() {
         try {
             await createHousehold(name);
             toast.success("Household created!");
-            // Parent component should detect change and redirect/update
         } catch (err) {
             toast.error(err.message || "Failed to create household");
+        }
+    };
+
+    const handleJoin = async (e) => {
+        e.preventDefault();
+        if (joinCode.length < 6) return;
+
+        try {
+            await joinHousehold(joinCode);
+            toast.success("Joined household!");
+        } catch (err) {
+            toast.error(err.message || "Failed to join. Check code.");
         }
     };
 
@@ -71,12 +83,31 @@ export default function HouseholdSetup() {
                         </button>
                     </form>
                 ) : (
-                    <div className="text-center py-8 text-gray-500">
-                        <p className="mb-4">Joining via code/invite is coming detailed in Phase 2!</p>
-                        <p className="text-xs">Ask the admin to add you for now.</p>
-                    </div>
+                    <form onSubmit={handleJoin} className="space-y-4">
+                        <div>
+                            <label className="block text-xs uppercase tracking-wider text-gray-500 mb-1">Invite Code</label>
+                            <input
+                                type="text"
+                                value={joinCode}
+                                onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                                placeholder="e.g. A1B2C3"
+                                maxLength={6}
+                                className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors tracking-widest uppercase font-mono text-center text-lg"
+                                autoFocus
+                            />
+                            <p className="text-xs text-gray-500 mt-2 text-center">Ask a member for their code from Household Settings</p>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={joinCode.length < 6 || isCreating}
+                            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white font-bold rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/20"
+                        >
+                            {isCreating ? "Joining..." : "Join Household"}
+                        </button>
+                    </form>
                 )}
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

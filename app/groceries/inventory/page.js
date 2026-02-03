@@ -6,8 +6,9 @@ import { useInventory } from "@/lib/hooks/groceries/useInventory";
 import HouseholdSetup from "@/components/groceries/HouseholdSetup";
 import AddItemModal from "@/components/groceries/AddItemModal";
 import AddPriceModal from "@/components/groceries/AddPriceModal";
+import HouseholdSettingsModal from "@/components/groceries/HouseholdSettingsModal";
 import toast from "react-hot-toast";
-import { Tag } from "lucide-react";
+import { Tag, Settings } from "lucide-react";
 import { useLanguage } from "@/lib/context/LanguageContext";
 
 export default function InventoryPage() {
@@ -20,6 +21,7 @@ export default function InventoryPage() {
     const { inventory, categories, isLoading: inventoryLoading, addItem, deleteItem } = useInventory(activeHousehold?.id);
     const [activeTab, setActiveTab] = useState("fridge"); // fridge, freezer, pantry
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [activePriceItem, setActivePriceItem] = useState(null);
 
     if (householdsLoading || inventoryLoading) {
@@ -60,6 +62,9 @@ export default function InventoryPage() {
                     <h1 className="text-2xl font-bold text-white transition-all">{activeHousehold.name}</h1>
                     <p className="text-sm text-gray-400">{t('nav_inventory')}</p>
                 </div>
+                <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
+                    <Settings size={20} />
+                </button>
             </header>
 
             {/* Tabs */}
@@ -156,6 +161,13 @@ export default function InventoryPage() {
                 <AddPriceModal
                     item={activePriceItem}
                     onClose={() => setActivePriceItem(null)}
+                />
+            )}
+
+            {showSettingsModal && (
+                <HouseholdSettingsModal
+                    household={activeHousehold}
+                    onClose={() => setShowSettingsModal(false)}
                 />
             )}
         </div>

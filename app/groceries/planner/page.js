@@ -5,10 +5,11 @@ import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
 import { usePlanner } from "@/lib/hooks/groceries/usePlanner";
 import { useRecipes } from "@/lib/hooks/groceries/useRecipes";
 import { format, startOfWeek, endOfWeek, addDays, startOfMonth, endOfMonth, isSameDay } from "date-fns";
-import { ChevronLeft, ChevronRight, Plus, Trash2, ChefHat, AlignJustify, Calendar as CalendarIcon, Grid, ShoppingCart } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, ChefHat, AlignJustify, Calendar as CalendarIcon, Grid, ShoppingCart, Settings } from "lucide-react";
 import toast from "react-hot-toast";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import ShopForWeekModal from "@/components/groceries/ShopForWeekModal";
+import HouseholdSettingsModal from "@/components/groceries/HouseholdSettingsModal";
 
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 
@@ -27,6 +28,7 @@ export default function PlannerPage() {
 
     // Modals State
     const [showShopModal, setShowShopModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showDetailModal, setShowDetailModal] = useState(false); // NEW
     const [selectedPlan, setSelectedPlan] = useState(null); // NEW
@@ -184,6 +186,9 @@ export default function PlannerPage() {
                     <button onClick={() => setShowShopModal(true)} className="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 flex items-center gap-2 text-xs font-bold transition-colors">
                         <ShoppingCart size={16} /> <span className="hidden sm:inline">{t('shop_for_week')}</span>
                     </button>
+                    <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <Settings size={20} />
+                    </button>
                 </div>
                 <div className="flex items-center gap-4">
                     <button onClick={handlePrev} className="p-2 hover:bg-white/10 rounded-full"><ChevronLeft /></button>
@@ -306,6 +311,13 @@ export default function PlannerPage() {
                     onClose={() => setShowShopModal(false)}
                     plans={plans}
                     householdId={activeHousehold?.id}
+                />
+            )}
+
+            {showSettingsModal && (
+                <HouseholdSettingsModal
+                    household={activeHousehold}
+                    onClose={() => setShowSettingsModal(false)}
                 />
             )}
         </div>

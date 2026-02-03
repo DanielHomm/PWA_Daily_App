@@ -5,10 +5,11 @@ import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
 import { useShoppingList } from "@/lib/hooks/groceries/useShoppingList";
 import AddItemModal from "@/components/groceries/AddItemModal";
 import HouseholdSetup from "@/components/groceries/HouseholdSetup";
+import HouseholdSettingsModal from "@/components/groceries/HouseholdSettingsModal";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/lib/context/LanguageContext";
-import { ArrowDownToLine, Trash2 } from "lucide-react";
+import { ArrowDownToLine, Trash2, Settings } from "lucide-react";
 
 export default function ShoppingListPage() {
     const { t } = useLanguage();
@@ -17,6 +18,7 @@ export default function ShoppingListPage() {
 
     const { items, categories, isLoading: listLoading, addItem, toggleItem, deleteItem, moveToInventory } = useShoppingList(activeHousehold?.id);
     const [showAddModal, setShowAddModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
     const [movingItems, setMovingItems] = useState(false);
 
     if (householdsLoading || listLoading) {
@@ -92,9 +94,14 @@ export default function ShoppingListPage() {
                     <h1 className="text-2xl font-bold text-white max-w-[200px] truncate">{activeHousehold.name}</h1>
                     <p className="text-sm text-gray-400">{t('shopping_list')}</p>
                 </div>
-                <Link href="/groceries/inventory" className="text-sm text-emerald-400 hover:text-emerald-300">
-                    View Inventory →
-                </Link>
+                <div className="flex items-center gap-4">
+                    <Link href="/groceries/inventory" className="text-sm text-emerald-400 hover:text-emerald-300">
+                        Households →
+                    </Link>
+                    <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
+                        <Settings size={20} />
+                    </button>
+                </div>
             </header>
 
             {/* Scrollable Content */}
@@ -208,6 +215,13 @@ export default function ShoppingListPage() {
                     categories={categories}
                     onClose={() => setShowAddModal(false)}
                     onAdd={addItem}
+                />
+            )}
+
+            {showSettingsModal && (
+                <HouseholdSettingsModal
+                    household={activeHousehold}
+                    onClose={() => setShowSettingsModal(false)}
                 />
             )}
         </div>
