@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
 import toast from "react-hot-toast";
 
-export default function HouseholdSetup() {
+export default function HouseholdSetup({ onComplete }) {
     const { createHousehold, joinHousehold, isCreating } = useHouseholds();
     const [name, setName] = useState("");
     const [joinCode, setJoinCode] = useState("");
@@ -17,6 +17,7 @@ export default function HouseholdSetup() {
         try {
             await createHousehold(name);
             toast.success("Household created!");
+            if (onComplete) onComplete();
         } catch (err) {
             toast.error(err.message || "Failed to create household");
         }
@@ -29,6 +30,7 @@ export default function HouseholdSetup() {
         try {
             await joinHousehold(joinCode);
             toast.success("Joined household!");
+            if (onComplete) onComplete();
         } catch (err) {
             toast.error(err.message || "Failed to join. Check code.");
         }

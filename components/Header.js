@@ -100,6 +100,18 @@ export default function Header() {
               </Link>
             );
           })}
+          {/* Language Toggle (Mobile) */}
+          <button
+            onClick={() => {
+              toggleLanguage();
+              setMobileOpen(false);
+            }}
+            className="flex w-full items-center gap-2 px-3 py-2 rounded hover:bg-slate-600 text-left"
+          >
+            <Globe size={16} />
+            {language === 'en' ? 'English' : 'Deutsch'} ({language.toUpperCase()})
+          </button>
+
           {/* Auth Buttons for Mobile */}
           <div className="pt-2 border-t border-slate-500">
             <AuthButtons
