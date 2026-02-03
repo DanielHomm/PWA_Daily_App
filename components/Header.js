@@ -17,21 +17,15 @@ export default function Header() {
   const isAdmin = profile?.role === "admin";
 
   // Base nav items
-  const navItems = [{ name: "Home", href: "/" }];
+  const navItems = [
+    { name: "Hub", href: "/dashboard" },
+    { name: "Challenges", href: "/challenges" },
+  ];
 
-  // Only show Messages and Profile if logged in
-  if (profile) {
-    navItems.push({ name: "Challenges", href: "/challenges" });
-  }
-
-  // Only push Items if admin
   if (isAdmin) {
-    navItems.push({ name: "Messages", href: "/messages" });
-    navItems.push({ name: "Profile", href: "/profile" });
-    navItems.push({ name: "Grocery", href: "/shopping-lists" });
-    navItems.push({ name: "Supermarkets", href: "/supermarkets" });
-    navItems.push({ name: "Items", href: "/items" });
+    navItems.push({ name: "Household", href: "/groceries/inventory" });
   }
+
 
   return (
     <header className="w-full bg-slate-800 text-white shadow-md">
@@ -59,9 +53,8 @@ export default function Header() {
               <li key={item.name}>
                 <Link
                   href={item.href}
-                  className={`px-3 py-1 rounded hover:bg-slate-700 transition-colors ${
-                    isActive ? "bg-slate-700" : ""
-                  }`}
+                  className={`px-3 py-1 rounded hover:bg-slate-700 transition-colors ${isActive ? "bg-slate-700" : ""
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -89,9 +82,8 @@ export default function Header() {
                 key={item.name}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className={`block px-3 py-2 rounded hover:bg-slate-600 ${
-                  isActive ? "bg-slate-600" : ""
-                }`}
+                className={`block px-3 py-2 rounded hover:bg-slate-600 ${isActive ? "bg-slate-600" : ""
+                  }`}
               >
                 {item.name}
               </Link>
