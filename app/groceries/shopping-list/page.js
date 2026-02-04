@@ -10,6 +10,8 @@ import toast from "react-hot-toast";
 import Link from "next/link";
 import { useLanguage } from "@/lib/context/LanguageContext";
 import { ArrowDownToLine, Trash2, Settings } from "lucide-react";
+import ShoppingListItem from "@/components/groceries/ShoppingListItem";
+import AddPriceModal from "@/components/groceries/AddPriceModal";
 
 export default function ShoppingListPage() {
     const { t } = useLanguage();
@@ -19,6 +21,7 @@ export default function ShoppingListPage() {
     const { items, categories, isLoading: listLoading, addItem, toggleItem, deleteItem, moveToInventory } = useShoppingList(activeHousehold?.id);
     const [showAddModal, setShowAddModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [priceItem, setPriceItem] = useState(null); // Item to add price for
     const [movingItems, setMovingItems] = useState(false);
 
     if (householdsLoading || listLoading) {
@@ -96,7 +99,7 @@ export default function ShoppingListPage() {
                 </div>
                 <div className="flex items-center gap-4">
                     <Link href="/groceries/inventory" className="text-sm text-emerald-400 hover:text-emerald-300">
-                        Households →
+                        {t('groceries')} →
                     </Link>
                     <button onClick={() => setShowSettingsModal(true)} className="p-2 bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
                         <Settings size={20} />
@@ -117,24 +120,14 @@ export default function ShoppingListPage() {
                                 </h2>
                                 <div className="space-y-2">
                                     {group.items.map(item => (
-                                        <div key={item.id} className="glass glass-hover p-4 rounded-xl flex items-center justify-between group">
-                                            <div className="flex items-center gap-4 cursor-pointer" onClick={() => handleToggle(item.id, false)}>
-                                                <div className="w-6 h-6 rounded-full border-2 border-gray-500 hover:border-emerald-400 flex items-center justify-center transition-all bg-transparent">
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-medium text-white">{item.product?.name}</h3>
-                                                    <p className="text-xs text-gray-400">
-                                                        {item.quantity} {item.unit}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                                                className="text-gray-600 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </div>
+                                        <ShoppingListItem
+                                            key={item.id}
+                                            item={item}
+                                            onToggle={handleToggle} // Note: signature mismatch in component, fixed below or in component? Component expects (id, status). page calls handleToggle(id, status). Matches.
+                                            onDelete={deleteItem}
+                                            onMoveToInventory={moveToInventory} // Component expects id.
+                                            onAddPrice={(item) => setPriceItem(item)}
+                                        />
                                     ))}
                                 </div>
                             </div>
@@ -157,25 +150,14 @@ export default function ShoppingListPage() {
                         </h2>
                         <div className="space-y-2 opacity-60">
                             {checkedItems.map(item => (
-                                <div key={item.id} className="bg-white/5 p-3 rounded-xl flex items-center justify-between group">
-                                    <div className="flex items-center gap-4 cursor-pointer" onClick={() => handleToggle(item.id, true)}>
-                                        <div className="w-6 h-6 rounded-full border-2 border-emerald-500 bg-emerald-500 flex items-center justify-center transition-all">
-                                            <span className="text-white text-xs">✓</span>
-                                        </div>
-                                        <div className="line-through text-gray-400">
-                                            <h3 className="font-medium">{item.product?.name}</h3>
-                                            <p className="text-xs">
-                                                {item.quantity} {item.unit}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); deleteItem(item.id); }}
-                                        className="text-gray-600 hover:text-gray-400 p-2"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
+                                <ShoppingListItem
+                                    key={item.id}
+                                    item={item}
+                                    onToggle={handleToggle}
+                                    onDelete={deleteItem}
+                                    onMoveToInventory={moveToInventory}
+                                    onAddPrice={(item) => setPriceItem(item)}
+                                />
                             ))}
                         </div>
                     </div>
@@ -222,6 +204,13 @@ export default function ShoppingListPage() {
                 <HouseholdSettingsModal
                     household={activeHousehold}
                     onClose={() => setShowSettingsModal(false)}
+                />
+            )}
+
+            {priceItem && (
+                <AddPriceModal
+                    item={priceItem}
+                    onClose={() => setPriceItem(null)}
                 />
             )}
         </div>

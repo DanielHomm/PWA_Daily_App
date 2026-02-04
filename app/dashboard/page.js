@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
 import { useChallengesList } from "@/lib/hooks/challenges/useChallengesList";
 import { useProfile } from "@/lib/hooks/useProfile";
+import { useLanguage } from "@/lib/context/LanguageContext";
 
 function DashboardCard({ href, title, icon, description, colorClass }) {
     return (
@@ -35,20 +36,21 @@ export default function Dashboard() {
     const { data: profile } = useProfile();
     const isAdmin = profile?.role === "admin";
 
+    const { t } = useLanguage();
     const activeChallengesCount = challenges?.length || 0;
     const householdName = households?.[0]?.name || "Create Household";
 
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-10 animate-fade-in">
             <header className="mb-8">
-                <h1 className="text-3xl font-bold text-white mb-2">My Hub</h1>
+                <h1 className="text-3xl font-bold text-white mb-2">{t('dashboard')}</h1>
                 <p className="text-gray-400">Manage your daily life and goals</p>
             </header>
 
             <div className="flex flex-wrap gap-6">
                 <DashboardCard
                     href="/challenges"
-                    title="Daily Challenges"
+                    title={t('challenges')}
                     icon="🔥"
                     description={`${activeChallengesCount} Active Challenges`}
                     colorClass="bg-orange-500"
@@ -57,8 +59,8 @@ export default function Dashboard() {
                 {isAdmin && (
                     <DashboardCard
                         href="/groceries/inventory"
-                        title="Groceries"
-                        icon="🥦"
+                        title={t('groceries')}
+                        icon="🏠"
                         description={households?.length > 0 ? householdName : "Setup your kitchen"}
                         colorClass="bg-emerald-500"
                     />

@@ -17,11 +17,11 @@ insert into supermarket_chains (name, icon) values
 ('Kaufland', '🔴'),
 ('Penny', '🔴'),
 ('Netto', '⚫'),
-('DM', '�'),
-('Rossmann', '�'),
+('DM', '🧴'),
+('Rossmann', '🧴'),
 ('Alnatura', '🌿'),
 ('Globus', '🌍'),
-('Metro', '�'),
+('Metro', '🛒'),
 ('Tegut', '🌱')
 on conflict (name) do nothing;
 
@@ -61,16 +61,21 @@ create table if not exists product_prices (
 
 -- Chains: Public Read
 alter table supermarket_chains enable row level security;
+drop policy if exists "Chains are public" on supermarket_chains;
 create policy "Chains are public" on supermarket_chains for select using (true);
 
 -- Stores: Public Read, Auth Create
 alter table supermarket_stores enable row level security;
+drop policy if exists "Stores are public" on supermarket_stores;
 create policy "Stores are public" on supermarket_stores for select using (true);
+drop policy if exists "Auth can add stores" on supermarket_stores;
 create policy "Auth can add stores" on supermarket_stores for insert with check (auth.role() = 'authenticated');
 
 -- Prices: Public Read, Auth Create
 alter table product_prices enable row level security;
+drop policy if exists "Prices are public" on product_prices;
 create policy "Prices are public" on product_prices for select using (true);
+drop policy if exists "Auth can report prices" on product_prices;
 create policy "Auth can report prices" on product_prices for insert with check (auth.role() = 'authenticated');
 
 -- 5. Helper Function: Get Average Price for a Chain

@@ -25,7 +25,7 @@ export default function Header() {
   ];
 
   if (isAdmin) {
-    navItems.push({ name: t("nav_inventory"), href: "/groceries/inventory" });
+    navItems.push({ name: t("groceries"), href: "/groceries/inventory" });
   }
 
 

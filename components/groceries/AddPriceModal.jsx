@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { X, MapPin } from "lucide-react";
-import { usePricing } from "@/lib/hooks/groceries/usePricing";
+import { usePrices } from "@/lib/hooks/groceries/usePrices";
 import toast from "react-hot-toast";
 
 export default function AddPriceModal({ item, onClose }) {
-    const { chains, addStore, reportPrice } = usePricing();
+    const commonItemId = item.product?.common_item_id;
+    const { chains, createStore, addPrice, prices, pricesLoading } = usePrices(commonItemId);
     const [step, setStep] = useState(1); // 1: Chain/Type, 2: Store Name, 3: Price
 
     const [selectedChainId, setSelectedChainId] = useState(null); // Null = Independent
@@ -35,9 +36,9 @@ export default function AddPriceModal({ item, onClose }) {
             // Ideally search for existing store first, but for now we simplify:
             // Create store on the fly or select if logic existed.
             // Let's create it for now to handle "My Local Edeka".
-            const newStore = await addStore({
+            const newStore = await createStore({
                 name: storeName,
-                chainId: selectedChainId
+                chain_id: selectedChainId
             });
             setStoreId(newStore.id);
             setStep(3);
@@ -49,9 +50,9 @@ export default function AddPriceModal({ item, onClose }) {
     const handlePriceSubmit = async (e) => {
         e.preventDefault();
         try {
-            await reportPrice({
-                commonItemId: item.product?.common_item_id, // Ensure item has this!
-                storeId: storeId,
+            await addPrice({
+                common_item_id: item.product?.common_item_id, // Ensure item has this!
+                store_id: storeId,
                 price: parseFloat(price)
             });
             toast.success("Price reported!");
@@ -61,23 +62,11 @@ export default function AddPriceModal({ item, onClose }) {
         }
     };
 
-    if (!item.product?.common_item_id) {
-        return (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                <div className="bg-[#1e293b] p-6 rounded-3xl text-center">
-                    <p className="text-white mb-4">This checks prices for <b>Common Items</b>.</p>
-                    <p className="text-gray-400 text-sm mb-4">This appears to be a custom item.</p>
-                    <button onClick={onClose} className="bg-gray-700 px-4 py-2 rounded-lg text-white">Close</button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-[#1e293b] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/10">
+            <div className="bg-[#1e293b] w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-white/10 flex flex-col max-h-[90vh]">
 
-                <div className="p-6 border-b border-white/10 flex justify-between items-center">
+                <div className="p-6 border-b border-white/10 flex justify-between items-center shrink-0">
                     <h2 className="text-xl font-bold text-white">
                         Price for {item.product?.name}
                     </h2>
@@ -86,7 +75,32 @@ export default function AddPriceModal({ item, onClose }) {
                     </button>
                 </div>
 
-                <div className="p-6">
+                {/* Recent Prices / Best Prices */}
+                {step === 1 && (
+                    <div className="px-6 pt-4 shrink-0">
+                        <h3 className="text-xs uppercase text-emerald-400 font-bold mb-2">Best Prices</h3>
+                        {pricesLoading ? (
+                            <div className="text-sm text-gray-500">Loading prices...</div>
+                        ) : prices?.length > 0 ? (
+                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                {prices.map(p => (
+                                    <div key={p.id} className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-2 min-w-[100px] flex flex-col items-center">
+                                        <div className="text-lg font-bold text-emerald-400">€{p.price}</div>
+                                        <div className="text-xs text-white truncate max-w-full">
+                                            {p.store?.chain?.icon} {p.store?.chain?.name || 'Indep.'}
+                                        </div>
+                                        <div className="text-[10px] text-gray-400 truncate max-w-full">{p.store?.name}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-sm text-gray-500 bg-white/5 p-3 rounded-lg text-center">No prices reported yet. Be the first!</div>
+                        )}
+                        <div className="h-px bg-white/10 my-4"></div>
+                    </div>
+                )}
+
+                <div className="p-6 overflow-y-auto">
                     {step === 1 && (
                         <div className="space-y-4">
                             <p className="text-gray-400 text-sm">Where are you shopping?</p>
