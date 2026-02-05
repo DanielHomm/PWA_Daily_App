@@ -94,18 +94,42 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {recentChallenges.map(challenge => (
               <Link key={challenge.id} href={`/challenges/${challenge.id}`}>
-                <div className="glass glass-hover rounded-2xl p-5 h-full flex flex-col justify-between group cursor-pointer">
-                  <div>
-                    <h3 className="font-bold text-lg mb-1 group-hover:text-emerald-400 transition-colors">
+                <div className="relative overflow-hidden rounded-2xl p-6 h-full flex flex-col justify-between group cursor-pointer bg-slate-800/50 border border-white/5 hover:border-emerald-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-1">
+
+                  {/* Gradient Decoration */}
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-emerald-500/20 transition-all duration-500" />
+
+                  <div className="relative z-10">
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="p-2 bg-emerald-500/10 rounded-xl text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-colors duration-300">
+                        <span className="text-xl">🎯</span>
+                      </div>
+                      {/* Optional: Add status badge here if available */}
+                    </div>
+
+                    <h3 className="font-bold text-lg mb-2 text-gray-100 group-hover:text-emerald-400 transition-colors">
                       {challenge.name}
                     </h3>
-                    <p className="text-sm text-gray-400 line-clamp-2">{challenge.description}</p>
+                    <p className="text-sm text-gray-400 line-clamp-2 leading-relaxed">
+                      {challenge.description || "No description provided."}
+                    </p>
                   </div>
-                  <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-                    <span className="bg-white/5 px-2 py-1 rounded-lg">
-                      {new Date(challenge.start_date).toLocaleDateString()}
+
+                  <div className="relative z-10 mt-6 pt-4 border-t border-white/5 flex items-center justify-between text-xs text-gray-500 group-hover:text-gray-400 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1.5 bg-white/5 px-2.5 py-1.5 rounded-full">
+                        <span>📅</span>
+                        {(() => {
+                          if (!challenge.start_date) return "No date";
+                          const date = new Date(challenge.start_date);
+                          return isNaN(date.getTime()) ? "No date" : date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                        })()}
+                      </span>
+                    </div>
+
+                    <span className="flex items-center gap-1 text-emerald-500/70 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">
+                      Open <span className="text-lg leading-none">→</span>
                     </span>
-                    <span>→</span>
                   </div>
                 </div>
               </Link>
@@ -146,7 +170,7 @@ function LandingPage() {
       <div className="relative">
         <div className="absolute inset-0 bg-emerald-500 blur-[80px] opacity-20 rounded-full" />
         <h1 className="relative text-5xl md:text-7xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white to-gray-500 mb-6">
-          Daily App
+          Challenge App
         </h1>
       </div>
 

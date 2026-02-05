@@ -8,6 +8,7 @@ import { useLanguage } from "@/lib/context/LanguageContext";
 import AuthButtons from "./AuthButtons";
 import AuthForm from "./AuthForm";
 import { Menu, X, Globe } from "lucide-react";
+import Image from "next/image";
 
 export default function Header() {
   const pathname = usePathname();
@@ -25,7 +26,6 @@ export default function Header() {
   ];
 
   if (isAdmin) {
-    navItems.push({ name: t("groceries"), href: "/groceries/inventory" });
     navItems.push({ name: "Admin", href: "/admin" });
   }
 
@@ -43,8 +43,9 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link href="/" className="text-lg font-bold">
-            Supabase PWA
+          <Link href="/" className="text-lg font-bold flex items-center gap-2">
+            <Image src="/icons/FrugalFridge-no_bg.png" width={40} height={40} alt="FrugalFridge Logo" priority />
+            <span>Challenge App</span>
           </Link>
         </div>
 

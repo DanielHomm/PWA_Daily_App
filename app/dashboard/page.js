@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useHouseholds } from "@/lib/hooks/groceries/useHouseholds";
+
 import { useChallengesList } from "@/lib/hooks/challenges/useChallengesList";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -31,14 +31,12 @@ function DashboardCard({ href, title, icon, description, colorClass }) {
 }
 
 export default function Dashboard() {
-    const { households, isLoading: householdsLoading } = useHouseholds();
     const { challenges, isLoading: challengesLoading } = useChallengesList();
     const { data: profile } = useProfile();
     const isAdmin = profile?.role === "admin";
 
     const { t } = useLanguage();
     const activeChallengesCount = challenges?.length || 0;
-    const householdName = households?.[0]?.name || "Create Household";
 
     return (
         <div className="max-w-5xl mx-auto p-6 space-y-10 animate-fade-in">
@@ -55,16 +53,6 @@ export default function Dashboard() {
                     description={`${activeChallengesCount} Active Challenges`}
                     colorClass="bg-orange-500"
                 />
-
-                {isAdmin && (
-                    <DashboardCard
-                        href="/groceries/inventory"
-                        title={t('groceries')}
-                        icon="🏠"
-                        description={households?.length > 0 ? householdName : "Setup your kitchen"}
-                        colorClass="bg-emerald-500"
-                    />
-                )}
             </div>
 
             {/* Quick Stats or Widgets can go here later */}

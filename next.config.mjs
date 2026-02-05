@@ -15,15 +15,7 @@ const withPWA = withPWAInit({
         expiration: { maxEntries: 1, maxAgeSeconds: 24 * 60 * 60 }, // 1 day
       },
     },
-    // Cache dynamic shopping-list pages
-    {
-      urlPattern: /^\/shopping-lists\/.*$/i,
-      handler: "NetworkFirst",
-      options: {
-        cacheName: "shopping-list-pages",
-        expiration: { maxEntries: 20, maxAgeSeconds: 24 * 60 * 60 }, // keep 20 recent lists
-      },
-    },
+
     // Cache images
     {
       urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,

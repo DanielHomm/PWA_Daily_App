@@ -2,7 +2,7 @@ import './globals.css';
 import ClientProviderLayout from './client-layout';
 
 export const metadata = {
-  title: 'FrugalFridge',
+  title: 'Challenge App',
   manifest: "/manifest.json",
   icons: {
     apple: "/icons/apple-touch-icon.png",
