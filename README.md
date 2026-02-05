@@ -183,6 +183,28 @@ Each user has a profile in the `public.profiles` table, linked to `auth.users` v
 - `cook_time_minutes`: numeric
 - `prep_time_minutes`: numeric
 
+#### `recipe_ingredients`
+- `id`: uuid
+- `recipe_id`: uuid (references `recipes.id`)
+- `common_item_id`: uuid (Optional, reference to global items)
+- `name`: text (Fallback name if no common item)
+- `quantity`: numeric
+- `unit`: text
+
+### 6. AI Features (Magic Import)
+
+#### Recipe Extraction Pipeline
+The app features a "Magic Import" for recipes that uses a multi-stage AI pipeline:
+1.  **Jina AI Reader**: Fetches public URLs and converts "dirty" HTML into clean, token-efficient Markdown.
+2.  **Google Gemini 1.5 Flash**: Parses the Markdown to extract:
+    *   Title, Description, Instructions
+    *   Prep/Cook Times (with inference logic)
+    *   Ingredients (structured data)
+    *   Spices (separated from shopping list items)
+3.  **Localization**: Automatically detects the user's app language (English/German) and instructs the LLM to translate all extracted content accordingly.
+
+#### APIs Used
+- `api/ai/extract-recipe`: Proxies requests to Jina and Gemini. Requires `GEMINI_API_KEY`.
 
 #### `meal_plans`
 - `id`: uuid
