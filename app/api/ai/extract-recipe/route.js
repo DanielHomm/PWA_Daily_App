@@ -7,7 +7,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 export async function POST(req) {
     try {
         const body = await req.json();
-        const { url, text } = body;
+        const { url, text, language = 'en' } = body;
+
+        const targetLanguage = language === 'de' ? 'German' : 'English';
 
         let promptContent = "";
 
@@ -45,17 +47,26 @@ export async function POST(req) {
 
         const systemPrompt = `
     You are an expert recipe parser. Extract the recipe into a JSON format.
+    
+    CRITICAL RULE FOR LANGUAGE:
+    Translate ALL content (Title, Description, Ingredients, Steps) into ${targetLanguage}.
+    Use the appropriate culinary terms in ${targetLanguage}.
 
     CRITICAL VALIDATION STEP:
     First, check if the content provided is actually a cooking recipe.
     If it is NOT a recipe (e.g. a blog post without a recipe, a privacy policy, a generic page), return exactly:
     {"error": "No recipe found in content"}
 
-    CRITICAL RULE FOR SPICES & PANTRY ITEMS:
-    Identify "Pantry Spices", "Common Pantry Items" (Salt, Pepper, Oil, Sugar, Flour), AND "Garnishes" (e.g. Parmesan, Basil, Parsley if used for topping).
-    ALSO identify items with VAGUE or MISSING units (e.g. "some basil", "salt to taste", "parmesan").
-    REMOVE ALL these from the 'ingredients' list. The 'ingredients' list must only contain clear grocery items to buy.
-    Return a separate "spices" array for these removed items.
+    CRITICAL RULE FOR SPICES:
+    Identify ONLY "Basic Spices" (Salt, Black Pepper, Dried Herbs like Oregano/Thyme).
+    REMOVE ONLY these from the 'ingredients' list and put them in the "spices" array.
+    
+    IMPORTANT: Keep "Common Pantry Items" (Oil, Olive Oil, Vinegar, Sugar, Flour, Butter) AND "Garnishes" (Fresh Herbs, Parmesan) IN the 'ingredients' list. We want to buy these if needed.
+
+    CRITICAL RULE FOR AMOUNTS:
+    If an item has no specific amount (e.g. "Olive Oil for frying", "Garnish with Basil"), 
+    set "amount": "1" and "unit": "to taste" (or "unit" if it's a countable object).
+    NEVER exclude an ingredient just because the amount is vague.
 
     CRITICAL RULE FOR TIME:
     Extract 'prep_time', 'cook_time', and 'total_time' (in minutes).

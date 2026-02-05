@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { Sparkles, Link as LinkIcon, Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/context/LanguageContext";
 import { useRecipeImport } from "@/lib/hooks/groceries/useRecipeImport";
 
 export default function MagicRecipeInput({ onImport }) {
+    const { language } = useLanguage();
     const [url, setUrl] = useState("");
     const { extractRecipe, isLoading } = useRecipeImport();
 
@@ -12,7 +14,7 @@ export default function MagicRecipeInput({ onImport }) {
         e.preventDefault();
         if (!url) return;
 
-        const data = await extractRecipe(url);
+        const data = await extractRecipe(url, language);
         if (data) {
             onImport(data);
             setUrl(""); // Clear after success
