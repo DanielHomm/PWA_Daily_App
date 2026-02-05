@@ -14,26 +14,7 @@ export default function RecipesPage() {
     const activeHousehold = households?.[0];
     const { recipes = [], isLoading, createRecipe, deleteRecipe } = useRecipes(activeHousehold?.id);
 
-    const [newRecipeName, setNewRecipeName] = useState("");
-    const [isCreating, setIsCreating] = useState(false);
 
-    const handleCreate = async (e) => {
-        e.preventDefault();
-        if (!newRecipeName.trim()) return;
-
-        try {
-            await createRecipe({
-                household_id: activeHousehold.id,
-                name: newRecipeName,
-                default_servings: 2 // Default
-            });
-            setNewRecipeName("");
-            setIsCreating(false);
-            toast.success(t('recipe_created') || "Recipe created!");
-        } catch (err) {
-            toast.error("Failed to create recipe");
-        }
-    };
 
     const handleDelete = async (e, id) => {
         e.preventDefault(); // Prevent link click
@@ -52,31 +33,15 @@ export default function RecipesPage() {
                     <h1 className="text-2xl font-bold text-white">{t('recipes')}</h1>
                     <p className="text-sm text-gray-400">{t('meal_planner')}</p>
                 </div>
-                <button
-                    onClick={() => setIsCreating(!isCreating)}
+                <Link
+                    href="/groceries/recipes/create"
                     className="p-2 bg-emerald-500/10 text-emerald-400 rounded-full hover:bg-emerald-500/20"
                 >
                     <Plus size={24} />
-                </button>
+                </Link>
             </header>
 
-            {isCreating && (
-                <form onSubmit={handleCreate} className="bg-white/5 p-4 rounded-xl border border-white/10 animate-fade-in mb-6">
-                    <label className="block text-xs uppercase text-gray-500 mb-2">Recipe Name</label>
-                    <div className="flex gap-2">
-                        <input
-                            value={newRecipeName}
-                            onChange={e => setNewRecipeName(e.target.value)}
-                            placeholder="e.g. Spaghetti Bolognese"
-                            className="flex-1 bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:border-emerald-500 outline-none"
-                            autoFocus
-                        />
-                        <button className="px-6 bg-emerald-500 text-white font-bold rounded-lg">
-                            Create
-                        </button>
-                    </div>
-                </form>
-            )}
+
 
             <div className="space-y-3">
                 {recipes?.length === 0 ? (

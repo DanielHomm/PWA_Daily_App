@@ -26,6 +26,7 @@ export default function Header() {
 
   if (isAdmin) {
     navItems.push({ name: t("groceries"), href: "/groceries/inventory" });
+    navItems.push({ name: "Admin", href: "/admin" });
   }
 
 

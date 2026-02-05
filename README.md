@@ -76,6 +76,21 @@ This project uses Supabase for the database and authentication. Below is the sch
 - `date`: date (YYYY-MM-DD)
 - *Unique Constraint*: (user_id, date, sub_challenge_id)
 
+## Authentication & Users
+
+### Profiles Table
+Each user has a profile in the `public.profiles` table, linked to `auth.users` via `id`.
+- `id` (uuid, PK, references auth.users)
+- `user_name` (text, unique)
+- `role` (text): 'user' or 'admin'
+- `first_name` (text, nullable)
+- `last_name` (text, nullable)
+- `created_at` (timestamptz)
+
+### RLS Policies
+- `common_items`: Readable by everyone. Writable (insert/update) by admins only.
+- `households` & `household_members`: Standard tenancy model.
+
 ### 2. Row Level Security (RLS) Policies
 
 **`challenges`**
@@ -92,3 +107,92 @@ This project uses Supabase for the database and authentication. Below is the sch
 **`challenge_checkins`**
 - **SELECT**: Visible to all members of the challenge.
 - **INSERT**: Users can only insert check-ins for themselves (`auth.uid() = user_id`).
+
+### 3. Kitchen & Household Schema
+
+#### `grocery_categories` (Seeded)
+- `id`: uuid (Primary Key)
+- `name`: text (Unique)
+- `icon`: text (Emoji)
+- `sort_order`: int
+- **RLS**: Public read-only.
+
+#### `households` (Tenancy Unit)
+- `id`: uuid (Primary Key)
+- `name`: text
+- `invite_code`: text (Unique, 6-char)
+- `created_by`: uuid (references `auth.users.id`)
+- **RLS**: Visible to members only.
+
+#### `household_members`
+- `household_id`: uuid (references `households.id`)
+- `user_id`: uuid (references `auth.users.id`)
+- `role`: text ('admin', 'member')
+- **RLS**: Visible to members of the same household.
+
+#### `household_products` (Defined items in household)
+- `id`: uuid (Primary Key)
+- `household_id`: uuid (references `households.id`)
+- `name`: text
+- `category_id`: uuid (references `grocery_categories.id`)
+
+#### `inventory_items` (Actual stock)
+- `id`: uuid (Primary Key)
+- `household_id`: uuid
+- `product_id`: uuid
+- `location`: text ('fridge', 'freezer', 'pantry')
+- `quantity`: numeric
+- `expiry_date`: date
+
+#### `shopping_list_items`
+- `id`: uuid (Primary Key)
+- `household_id`: uuid
+- `product_id`: uuid
+- `is_checked`: boolean
+- `quantity`: numeric
+
+### 4. Community Pricing Schema
+
+#### `supermarket_chains` (Global, Seeded)
+- `id`: uuid
+- `name`: text
+- `icon`: text
+- **RLS**: Public read.
+
+#### `supermarket_stores` (User generated locations)
+- `id`: uuid
+- `chain_id`: uuid
+- `name`: text (e.g. "Main St")
+- **RLS**: Public read, Authenticated create.
+
+#### `product_prices` (Crowdsourced)
+- `id`: uuid
+- `common_item_id`: uuid (Global item reference)
+- `store_id`: uuid
+- `price`: numeric
+- **RLS**: Public read, Authenticated create.
+
+### 5. Recipes & Planner Schema
+
+#### `recipes`
+- `id`: uuid
+- `household_id`: uuid
+- `name`: text
+- `description`: text (Instructions)
+- `default_servings`: numeric
+- `cook_time_minutes`: numeric
+- `prep_time_minutes`: numeric
+
+
+#### `meal_plans`
+- `id`: uuid
+- `household_id`: uuid
+- `date`: date
+- `meal_type`: text ('breakfast', 'lunch', 'dinner')
+- `recipe_id`: uuid (Optional link)
+- `custom_text`: text (Optional text)
+
+### Household RLS Policies Summary
+- **Households/Inventory/Recipes/Plans**: Strictly scoped to `household_members`. Users can only access data for households they have joined.
+- **Pricing/Chains**: Open data model. Anyone can read, any authenticated user can contribute (create stores/prices).
+- **Invite Logic**: `join_household_by_code` is a `SECURITY DEFINER` function to bypass RLS for the initial lookup of the code, allowing users to find and join a household they don't yet have access to.

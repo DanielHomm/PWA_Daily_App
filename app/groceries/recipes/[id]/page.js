@@ -4,9 +4,10 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useRecipeDetail } from "@/lib/hooks/groceries/useRecipes";
 import { useShoppingList } from "@/lib/hooks/groceries/useShoppingList";
-import { ArrowLeft, Users, Plus, Trash2, ChefHat, ShoppingCart } from "lucide-react";
+import { ArrowLeft, Users, Plus, Trash2, ChefHat, ShoppingCart, Clock } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import ReactMarkdown from "react-markdown";
 import ItemSearchCombobox from "@/components/groceries/ItemSearchCombobox";
 import { useInventory } from "@/lib/hooks/groceries/useInventory";
 import { useLanguage } from "@/lib/context/LanguageContext";
@@ -181,6 +182,44 @@ export default function RecipeDetailPage() {
                     </button>
                 )}
             </div>
+
+            {/* Times & Description */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="glass p-4 rounded-xl flex items-center gap-3">
+                    <Clock className="text-emerald-400" size={20} />
+                    <div>
+                        <div className="text-xs text-gray-400">Prep</div>
+                        <div className="font-bold text-white">{recipe.prep_time_minutes || 0} min</div>
+                    </div>
+                </div>
+                <div className="glass p-4 rounded-xl flex items-center gap-3">
+                    <ChefHat className="text-orange-400" size={20} />
+                    <div>
+                        <div className="text-xs text-gray-400">Cook</div>
+                        <div className="font-bold text-white">{recipe.cook_time_minutes || 0} min</div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Instructions / Description */}
+            {recipe.description && (
+                <div className="glass p-6 rounded-2xl space-y-3">
+                    <h2 className="text-lg font-bold text-white">Instructions</h2>
+                    <div className="text-gray-300 leading-relaxed">
+                        <ReactMarkdown
+                            components={{
+                                strong: ({ node, ...props }) => <strong className="text-emerald-400 font-bold block mt-4 mb-2" {...props} />,
+                                ul: ({ node, ...props }) => <ul className="list-none space-y-2 pl-2" {...props} />,
+                                li: ({ node, ...props }) => <li className="flex gap-2 before:content-['•'] before:text-emerald-500 before:font-bold" {...props} />,
+                                p: ({ node, ...props }) => <p className="mb-2" {...props} />,
+                                a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300 underline" target="_blank" {...props} />
+                            }}
+                        >
+                            {recipe.description}
+                        </ReactMarkdown>
+                    </div>
+                </div>
+            )}
 
             {/* Ingredients */}
             <div className="space-y-4">
