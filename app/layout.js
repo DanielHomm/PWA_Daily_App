@@ -2,8 +2,11 @@ import './globals.css';
 import ClientProviderLayout from './client-layout';
 
 export const metadata = {
-  title: 'Supabase PWA',
+  title: 'FrugalFridge',
   manifest: "/manifest.json",
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }) {

@@ -1,6 +1,6 @@
 {
-  "name": "Supabase PWA",
-  "short_name": "PWA",
+  "name": "FrugalFridge",
+  "short_name": "FrugalFridge",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
