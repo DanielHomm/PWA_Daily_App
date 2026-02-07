@@ -29,6 +29,7 @@ function ChallengeDetailContent() {
     myCheckins,
     isTaskDoneOnDate,
     isCheckInAllowedForTask, // New helper
+    isTaskCompletedForPeriod,
     checkInToday,
     addCheckinForDate,
     removeMember,
@@ -181,13 +182,17 @@ function ChallengeDetailContent() {
               // Only check allowance if NOT done (if done, it's disabled anyway)
               // We pass 'new Date()' for today
               const isAllowed = isDone || isCheckInAllowedForTask(new Date(), task);
+              const isPeriodDone = !isDone && isTaskCompletedForPeriod(new Date(), task);
+
+              // Effective "Done" state for UI: Done today OR Done for period (weekly/monthly)
+              const showAsDone = isDone || isPeriodDone;
 
               return (
                 <div
                   key={task.id || 'legacy'}
                   className={`
                     group relative overflow-hidden rounded-2xl p-4 border transition-all duration-300
-                    ${isDone
+                    ${showAsDone
                       ? "bg-emerald-500/10 border-emerald-500/20"
                       : isAllowed
                         ? "bg-white/5 border-white/10 hover:border-emerald-500/30 hover:bg-white/10"
@@ -197,27 +202,32 @@ function ChallengeDetailContent() {
                 >
                   <div className="flex items-center justify-between relative z-10">
                     <div>
-                      <h3 className={`font-bold transition-colors ${isDone ? "text-emerald-400" : isAllowed ? "text-white" : "text-gray-500"}`}>
+                      <h3 className={`font-bold transition-colors ${showAsDone ? "text-emerald-400" : isAllowed ? "text-white" : "text-gray-500"}`}>
                         {task.title}
                       </h3>
                       <div className="flex gap-2 mt-1">
                         <span className="text-xs text-gray-400 capitalize bg-white/5 inline-block px-2 py-0.5 rounded-lg">
                           {task.frequency.replace(/_/g, " ")}
                         </span>
-                        {!isAllowed && !isDone && (
+                        {!isAllowed && !showAsDone && (
                           <span className="text-xs text-orange-400 bg-orange-400/10 inline-block px-2 py-0.5 rounded-lg">
                             Locked
+                          </span>
+                        )}
+                        {isPeriodDone && (
+                          <span className="text-xs text-emerald-400 bg-emerald-400/10 inline-block px-2 py-0.5 rounded-lg">
+                            Done for period
                           </span>
                         )}
                       </div>
                     </div>
 
                     <button
-                      onClick={() => isAllowed && !isDone && checkInToday(task.id)}
-                      disabled={isDone || !isAllowed}
+                      onClick={() => isAllowed && !showAsDone && checkInToday(task.id)}
+                      disabled={showAsDone || !isAllowed}
                       className={`
                         w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300
-                        ${isDone
+                        ${showAsDone
                           ? "bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)] scale-110"
                           : isAllowed
                             ? "bg-white/10 text-gray-500 hover:bg-emerald-500 hover:text-white cursor-pointer"
@@ -225,13 +235,13 @@ function ChallengeDetailContent() {
                         }
                       `}
                     >
-                      {isDone ? "✓" : isAllowed ? "⚡" : "🔒"}
+                      {showAsDone ? "✓" : isAllowed ? "⚡" : "🔒"}
                     </button>
                   </div>
 
                   {/* Progress fill animation on complete */}
                   <div
-                    className={`absolute inset-0 bg-emerald-500/5 transition-transform duration-500 origin-left ${isDone ? "scale-x-100" : "scale-x-0"}`}
+                    className={`absolute inset-0 bg-emerald-500/5 transition-transform duration-500 origin-left ${showAsDone ? "scale-x-100" : "scale-x-0"}`}
                   />
                 </div>
               );
