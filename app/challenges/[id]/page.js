@@ -33,7 +33,9 @@ function ChallengeDetailContent() {
     checkInToday,
     addCheckinForDate,
     removeMember,
+
     refetch,
+    groupStats, // Get new stats
   } = useChallengeDetail(id);
 
   if (loading) return (
@@ -249,26 +251,45 @@ function ChallengeDetailContent() {
           </div>
         </div>
 
-        {/* Top Member / Stats Placeholder */}
-        <div className="glass rounded-3xl p-8 flex flex-col justify-between">
+        {/* Group Pulse Card (Replaces Top Performer) */}
+        <div className="glass rounded-3xl p-8 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+
           <div>
-            <h2 className="text-lg font-semibold text-gray-300 mb-4">Top Performer</h2>
-            <div className="flex items-center gap-4 bg-white/5 p-4 rounded-xl">
-              <div className="w-12 h-12 bg-purple-500/20 rounded-full flex items-center justify-center text-xl">
-                🥇
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
               </div>
-              <div>
-                <p className="font-bold text-white">
-                  {/* Simplified selection of top performer for now */}
-                  {memberStats[0]?.displayName || "TBD"}
+              <h2 className="text-lg font-semibold text-gray-300">Group Pulse</h2>
+            </div>
+
+            <div className="space-y-4">
+              {/* Today's Activity */}
+              <div className="bg-white/5 p-4 rounded-xl border border-white/5">
+                <div className="flex justify-between items-end mb-1">
+                  <span className="text-3xl font-bold text-white">{groupStats?.checkinsToday || 0}</span>
+                  <span className="text-xs text-emerald-400 font-medium uppercase tracking-wider mb-1">Check-ins Today</span>
+                </div>
+                <div className="w-full bg-gray-700/30 h-1 rounded-full overflow-hidden">
+                  <div className="bg-emerald-500 h-full rounded-full" style={{ width: `${Math.min(100, ((groupStats?.checkinsToday || 0) / (groupStats?.totalMembers || 1)) * 100)}%` }} />
+                </div>
+                <p className="text-xs text-gray-400 mt-2">
+                  {groupStats?.activeMembersToday || 0} of {groupStats?.totalMembers || 0} members active today
                 </p>
-                <p className="text-xs text-gray-400">Leading the pack!</p>
+              </div>
+
+              {/* Total Stats */}
+              <div className="flex items-center justify-between text-sm text-gray-400 px-2">
+                <span>Total Check-ins</span>
+                <span className="text-white font-mono bg-white/10 px-2 py-0.5 rounded text-xs">{groupStats?.totalCheckins || 0}</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-6 text-sm text-gray-500">
-            Keep consistent to takeover the leaderboard!
+          <div className="mt-6 text-sm text-gray-500 text-center italic">
+            "Alone we go faster, together we go further."
           </div>
         </div>
       </section>
