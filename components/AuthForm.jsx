@@ -36,6 +36,7 @@ export default function AuthForm({ onAuthSuccess, defaultMode = "login" }) {
 
     toast.success("Welcome back!");
     onAuthSuccess?.();
+    router.refresh(); // Refresh server context
     router.push("/");
   }
 
