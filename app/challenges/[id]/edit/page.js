@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { fetchFullChallengeData } from "@/lib/data/challenge/challenge.queries";
 import { updateChallenge, upsertSubChallenges, deleteSubChallenge } from "@/lib/data/challenge/challenge.updates";
+import { askForPushPermissionsAndSubscribe } from "@/lib/push";
 
 export default function EditChallengePage() {
     const router = useRouter();
@@ -53,6 +54,7 @@ export default function EditChallengePage() {
                 id: sc.id,
                 title: sc.title,
                 frequency: sc.frequency,
+                reminders_active: sc.reminders_active || false,
                 isNew: false
             })));
         }
@@ -66,7 +68,7 @@ export default function EditChallengePage() {
     const addSubChallenge = () => {
         setSubChallenges([
             ...subChallenges,
-            { id: null, title: "", frequency: "daily", isNew: true }
+            { id: null, title: "", frequency: "daily", reminders_active: false, isNew: true }
         ]);
     };
 
@@ -92,7 +94,19 @@ export default function EditChallengePage() {
         }
     };
 
-    const updateSubChallenge = (index, field, value) => {
+    const updateSubChallenge = async (index, field, value) => {
+        if (field === "reminders_active" && value === true) {
+            if (user) {
+                toast.promise(
+                    askForPushPermissionsAndSubscribe(user.id),
+                    {
+                        loading: "Setting up push notifications...",
+                        success: "Push notifications enabled!",
+                        error: "Failed to enable notifications.",
+                    }
+                );
+            }
+        }
         const updated = [...subChallenges];
         updated[index] = { ...updated[index], [field]: value };
         setSubChallenges(updated);
@@ -114,7 +128,8 @@ export default function EditChallengePage() {
                 id: sc.isNew ? undefined : sc.id, // undefined tells Supabase to generate ID
                 challenge_id: id,
                 title: sc.title,
-                frequency: sc.frequency
+                frequency: sc.frequency,
+                reminders_active: sc.reminders_active || false
             }));
 
             if (toUpsert.length > 0) {
@@ -198,13 +213,24 @@ export default function EditChallengePage() {
                         <div className="space-y-3">
                             {subChallenges.map((sc, index) => (
                                 <div key={sc.id || `new-${index}`} className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={sc.title}
-                                        onChange={(e) => updateSubChallenge(index, "title", e.target.value)}
-                                        placeholder="Task Name"
-                                        className="flex-[2] rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:outline-none focus:border-emerald-500/50 text-sm"
-                                    />
+                                    <div className="flex flex-col gap-2 flex-[2]">
+                                        <input
+                                            type="text"
+                                            value={sc.title}
+                                            onChange={(e) => updateSubChallenge(index, "title", e.target.value)}
+                                            placeholder="Task Name"
+                                            className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white focus:outline-none focus:border-emerald-500/50 text-sm"
+                                        />
+                                        <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer w-fit pl-1">
+                                            <input
+                                                type="checkbox"
+                                                checked={sc.reminders_active || false}
+                                                onChange={(e) => updateSubChallenge(index, "reminders_active", e.target.checked)}
+                                                className="rounded bg-white/5 border-white/10 text-emerald-500 focus:ring-emerald-500/20"
+                                            />
+                                            Enable Reminders (4h before reset)
+                                        </label>
+                                    </div>
 
                                     {/* Frequency: Disabled if not new */}
                                     <div className="flex-1 relative">

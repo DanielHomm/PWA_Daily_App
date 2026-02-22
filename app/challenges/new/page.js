@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/lib/AuthContext";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
+import { askForPushPermissionsAndSubscribe } from "@/lib/push";
 
 export default function CreateChallengePage() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function CreateChallengePage() {
 
   // Sub-challenges state
   const [subChallenges, setSubChallenges] = useState([
-    { title: "Daily Goal", frequency: "daily" }
+    { title: "Daily Goal", frequency: "daily", reminders_active: false }
   ]);
 
   // ✅ Redirect if not logged in
@@ -32,7 +33,7 @@ export default function CreateChallengePage() {
 
   // ---------- Helpers ----------
   const addSubChallenge = () => {
-    setSubChallenges([...subChallenges, { title: "", frequency: "daily" }]);
+    setSubChallenges([...subChallenges, { title: "", frequency: "daily", reminders_active: false }]);
   };
 
   const removeSubChallenge = (index) => {
@@ -40,7 +41,19 @@ export default function CreateChallengePage() {
     setSubChallenges(subChallenges.filter((_, i) => i !== index));
   };
 
-  const updateSubChallenge = (index, field, value) => {
+  const updateSubChallenge = async (index, field, value) => {
+    if (field === "reminders_active" && value === true) {
+      if (user) {
+        toast.promise(
+          askForPushPermissionsAndSubscribe(user.id),
+          {
+            loading: "Setting up push notifications...",
+            success: "Push notifications enabled!",
+            error: "Failed to enable push notifications.",
+          }
+        );
+      }
+    }
     const updated = [...subChallenges];
     updated[index] = { ...updated[index], [field]: value };
     setSubChallenges(updated);
@@ -81,6 +94,7 @@ export default function CreateChallengePage() {
           challenge_id: challenge.id,
           title: sc.title || "Untitled Task",
           frequency: sc.frequency,
+          reminders_active: sc.reminders_active || false,
         }));
 
         const { error: subErr } = await supabase
@@ -216,17 +230,28 @@ export default function CreateChallengePage() {
             <div className="space-y-3">
               {subChallenges.map((sc, index) => (
                 <div key={index} className="flex gap-2">
-                  <input
-                    type="text"
-                    value={sc.title}
-                    onChange={(e) => updateSubChallenge(index, "title", e.target.value)}
-                    placeholder="Task Name (e.g. Drink Water)"
-                    className="flex-[2] rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-600 focus:border-emerald-500/50 focus:outline-none text-sm"
-                  />
+                  <div className="flex flex-col gap-2 flex-[2]">
+                    <input
+                      type="text"
+                      value={sc.title}
+                      onChange={(e) => updateSubChallenge(index, "title", e.target.value)}
+                      placeholder="Task Name (e.g. Drink Water)"
+                      className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-white placeholder-gray-600 focus:border-emerald-500/50 focus:outline-none text-sm"
+                    />
+                    <label className="flex items-center gap-2 text-xs text-gray-400 cursor-pointer w-fit pl-1">
+                      <input
+                        type="checkbox"
+                        checked={sc.reminders_active || false}
+                        onChange={(e) => updateSubChallenge(index, "reminders_active", e.target.checked)}
+                        className="rounded bg-white/5 border-white/10 text-emerald-500 focus:ring-emerald-500/20"
+                      />
+                      Enable Reminders (4h before reset)
+                    </label>
+                  </div>
                   <select
                     value={sc.frequency}
                     onChange={(e) => updateSubChallenge(index, "frequency", e.target.value)}
-                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-white text-sm focus:border-emerald-500/50 focus:outline-none"
+                    className="flex-1 rounded-xl border border-white/10 bg-white/5 px-2 py-2 text-white text-sm focus:border-emerald-500/50 focus:outline-none h-[38px]"
                   >
                     <option value="daily">Daily</option>
                     <option value="every_other_day">Every other day</option>
@@ -237,7 +262,7 @@ export default function CreateChallengePage() {
                     <button
                       type="button"
                       onClick={() => removeSubChallenge(index)}
-                      className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors"
+                      className="p-2 text-red-500 hover:bg-red-500/10 rounded-xl transition-colors h-[38px] flex items-center justify-center"
                     >
                       ✕
                     </button>
